@@ -18,40 +18,35 @@ class TenantContextMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip tenant context for admin panel routes that don't require a tenant
-        if ($request->is('admin/*') || $request->is('api/admin/*')) {
-            return $next($request);
-        }
-
-        // For app and pegawai panels, check authentication and tenant context
-        if ($request->is('app/*') || $request->is('pegawai/*')) {
-            // Don't run additional logic here as Filament handles auth for these panels
+        // Skip tenant context for all Filament panel routes
+        // This prevents interference with Filament's authentication system
+        if ($request->is('admin') || 
+            $request->is('admin/*') || 
+            $request->is('app') ||
+            $request->is('app/*') || 
+            $request->is('pegawai') ||
+            $request->is('pegawai/*')) {
             return $next($request);
         }
 
         // For non-panel routes, apply tenant context logic
-        if (!($request->is('admin/*') || $request->is('app/*') || $request->is('pegawai/*'))) {
-            // Check if authenticated user exists
-            if (Auth::check()) {
-                $user = Auth::user();
+        // Check if authenticated user exists
+        if (Auth::check()) {
+            $user = Auth::user();
 
-                // Set tenant context from user's tenant_id if it exists
-                if ($user->tenant_id) {
-                    // You can store the tenant_id in session or request for later use
-                    $request->attributes->set('tenant_id', $user->tenant_id);
-
-                    // Optionally you could also set a global variable or use Laravel's request macro
-                    // to make tenant_id easily accessible throughout the request
-                }
+            // Set tenant context from user's tenant_id if it exists
+            if ($user->tenant_id) {
+                // Store the tenant_id in request attributes for later use
+                $request->attributes->set('tenant_id', $user->tenant_id);
             }
+        }
 
-            // For API requests, you might also want to check for tenant in headers
-            $tenantHeader = $request->header('X-Tenant');
-            if ($tenantHeader) {
-                $tenant = Tenant::where('code', $tenantHeader)->first();
-                if ($tenant) {
-                    $request->attributes->set('tenant_id', $tenant->id);
-                }
+        // For API requests, check for tenant in headers
+        $tenantHeader = $request->header('X-Tenant');
+        if ($tenantHeader) {
+            $tenant = Tenant::where('code', $tenantHeader)->first();
+            if ($tenant) {
+                $request->attributes->set('tenant_id', $tenant->id);
             }
         }
 
