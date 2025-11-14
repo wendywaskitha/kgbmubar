@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pegawai extends Model
 {
-    use HasFactory, TenantAware;
+    use HasFactory, SoftDeletes, TenantAware;
 
     /**
      * The table associated with the model.
