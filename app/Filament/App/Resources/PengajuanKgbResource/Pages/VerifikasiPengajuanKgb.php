@@ -11,11 +11,13 @@ use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Pages\Concerns\InteractsWithHeaderActions;
 use Illuminate\Support\Facades\Auth;
 
 class VerifikasiPengajuanKgb extends Page
 {
     use InteractsWithRecord;
+    use InteractsWithHeaderActions;
 
     protected static string $resource = PengajuanKgbResource::class;
 
@@ -115,5 +117,10 @@ class VerifikasiPengajuanKgb extends Page
         return [
             DokumenPengajuanRelationManager::class,
         ];
+    }
+    
+    public function getWidgets(): array
+    {
+        return $this->getHeaderWidgets();
     }
 }
