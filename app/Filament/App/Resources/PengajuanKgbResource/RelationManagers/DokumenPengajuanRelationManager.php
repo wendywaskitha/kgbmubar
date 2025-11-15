@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Storage;
 
 class DokumenPengajuanRelationManager extends RelationManager
@@ -74,7 +75,6 @@ class DokumenPengajuanRelationManager extends RelationManager
                             'karpeg' => 'Kartu Pegawai',
                             'lainnya' => 'Lainnya',
                         ];
-
                         return $jenisLabels[$state] ?? $state;
                     })
                     ->searchable()
@@ -85,15 +85,22 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ->formatStateUsing(function ($record) {
                         return 'File: ' . basename($record->path_file);
                     })
-                    ->url(function ($record) {
-                        return Storage::url($record->path_file);
-                    }, true) // Opens in new tab
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\BadgeColumn::make('status_verifikasi')
+                    ->label('Status Verifikasi')
+                    ->colors([
+                        'gray' => 'Belum Diperiksa',
+                        'success' => 'valid',
+                        'danger' => 'tidak_valid',
+                        'warning' => 'revisi',
+                    ])
+                    ->enum([
+                        'belum_diperiksa' => 'Belum Diperiksa',
+                        'valid' => 'Valid',
+                        'tidak_valid' => 'Tidak Valid',
+                        'revisi' => 'Revisi',
+                    ]),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('jenis_dokumen')
@@ -112,9 +119,53 @@ class DokumenPengajuanRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Action::make('preview')
+                    ->label('Preview')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading('Preview Dokumen')
+                    ->modalContent(function ($record) {
+                        $fileUrl = asset('storage/' . ltrim($record->path_file, '/'));
+                        $extension = strtolower(pathinfo($record->path_file, PATHINFO_EXTENSION));
+                        $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']);
+                        if ($isImage) {
+                            return view('filament.app.resources.pengajuan-kgb-resource.partials.preview-image', [
+                                'fileUrl' => $fileUrl,
+                                'fileName' => $record->nama_file,
+                            ]);
+                        } else {
+                            return view('filament.app.resources.pengajuan-kgb-resource.partials.preview-pdf', [
+                                'fileUrl' => $fileUrl,
+                                'fileName' => $record->nama_file,
+                            ]);
+                        }
+                    })
+                    ->modalWidth('7xl'),
+                Action::make('verifikasi')
+                    ->label('Verifikasi')
+                    ->icon('heroicon-o-badge-check')
+                    ->form([
+                        Forms\Components\Select::make('status_verifikasi')
+                            ->label('Status Verifikasi')
+                            ->options([
+                                'valid' => 'Valid',
+                                'tidak_valid' => 'Tidak Valid',
+                                'revisi' => 'Revisi',
+                            ])
+                            ->required(),
+                        Forms\Components\Textarea::make('catatan_verifikasi')
+                            ->label('Catatan (opsional)')
+                            ->maxLength(255),
+                    ])
+                    ->action(function ($record, $data) {
+                        $record->status_verifikasi = $data['status_verifikasi'];
+                        $record->catatan_verifikasi = $data['catatan_verifikasi'];
+                        $record->tanggal_verifikasi = now();
+                        $record->save();
+                    })
+                    ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
