@@ -54,7 +54,7 @@ class CreatePengajuanKgb extends CreateRecord
     protected function afterCreate(): void
     {
         $record = $this->record;
-        $user = auth()->user();
+        $user = Auth::user();
         $pegawai = $user->pegawai;
 
         // Kirim notification ke admin_dinas, verifikator_dinas, operator_dinas di tenant yang sama
