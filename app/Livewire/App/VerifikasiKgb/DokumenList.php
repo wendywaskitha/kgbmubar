@@ -32,12 +32,46 @@ class DokumenList extends Component
     {
         $dokumen = DokumenPengajuan::find($dokumenId);
         
-        if ($dokumen && Storage::exists($dokumen->path_file)) {
+        if (!$dokumen) {
+            Notification::make()
+                ->title('Dokumen tidak ditemukan')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Cek apakah file ada di storage
+        $fileExists = false;
+        $fileUrl = null;
+        
+        // Coba berbagai kemungkinan path
+        if (Storage::disk('public')->exists($dokumen->path_file)) {
+            $fileExists = true;
+            $fileUrl = Storage::disk('public')->url($dokumen->path_file);
+        } elseif (Storage::exists($dokumen->path_file)) {
+            $fileExists = true;
+            $fileUrl = Storage::url($dokumen->path_file);
+        } elseif (file_exists(public_path($dokumen->path_file))) {
+            $fileExists = true;
+            $fileUrl = asset($dokumen->path_file);
+        }
+        
+        if ($fileExists && $fileUrl) {
             $this->selectedDokumen = $dokumen;
-            $this->dispatch('open-document-modal', ['url' => Storage::url($dokumen->path_file)]);
+            
+            // Deteksi tipe file
+            $extension = strtolower(pathinfo($dokumen->path_file, PATHINFO_EXTENSION));
+            $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+            
+            $this->dispatch('open-document-modal', [
+                'url' => $fileUrl,
+                'isImage' => $isImage,
+                'fileName' => $dokumen->nama_file
+            ]);
         } else {
             Notification::make()
                 ->title('File tidak ditemukan')
+                ->body('Path: ' . $dokumen->path_file)
                 ->danger()
                 ->send();
         }
