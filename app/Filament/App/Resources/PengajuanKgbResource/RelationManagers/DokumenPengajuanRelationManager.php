@@ -83,28 +83,34 @@ class DokumenPengajuanRelationManager extends RelationManager
                         return 'File: ' . basename($record->path_file);
                     })
                     ->searchable(),
-                Tables\Columns\BadgeColumn::make('status_verifikasi')
+                Tables\Columns\TextColumn::make('status_verifikasi')
                     ->label('Status Verifikasi')
-                    ->enum([
-                        'belum_diperiksa' => 'Belum Diperiksa',
-                        'valid' => 'Valid',
-                        'tidak_valid' => 'Tidak Valid',
-                        'revisi' => 'Revisi',
-                    ])
-                    ->icons([
-                        'heroicon-m-x-circle' => 'belum_diperiksa',
-                        'heroicon-m-check-circle' => 'valid',
-                        'heroicon-m-exclamation-circle' => 'tidak_valid',
-                        'heroicon-m-arrow-path' => 'revisi',
-                    ])
-                    ->iconSize(IconSize::Medium)
-                    ->colors([
-                        'gray' => 'belum_diperiksa',
-                        'success' => 'valid',
-                        'danger' => 'tidak_valid',
-                        'warning' => 'revisi',
-                    ])
-                    ->searchable(),
+                    ->badge()
+                    ->formatStateUsing(function ($state) {
+                        return match($state) {
+                            'belum_diperiksa' => 'Belum Diperiksa',
+                            'valid' => 'Valid',
+                            'tidak_valid' => 'Tidak Valid',
+                            'revisi' => 'Revisi',
+                            default => $state,
+                        };
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'belum_diperiksa' => 'heroicon-m-x-circle',
+                        'valid' => 'heroicon-m-check-circle',
+                        'tidak_valid' => 'heroicon-m-exclamation-circle',
+                        'revisi' => 'heroicon-m-arrow-path',
+                        default => 'heroicon-m-question-mark-circle',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'belum_diperiksa' => 'gray',
+                        'valid' => 'success',
+                        'tidak_valid' => 'danger',
+                        'revisi' => 'warning',
+                        default => 'gray',
+                    })
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('catatan_verifikasi')
                     ->label('Catatan')
                     ->wrap()
@@ -137,34 +143,32 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
+                Tables\Actions\CreateAction::make(),
+            ])
+            ->actions([
                 Tables\Actions\Action::make('preview')
                     ->label('Preview')
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->modalWidth('7xl') // Set the modal width to extra large
-                    ->modalContent(function (DokumenPengajuan $record): string {
+                    ->modalWidth('7xl')
+                    ->modalContent(function (DokumenPengajuan $record) {
                         $extension = pathinfo($record->path_file, PATHINFO_EXTENSION);
+                        $url = Storage::url($record->path_file);
 
                         if (in_array($extension, ['pdf'])) {
-                            return view('filament.components.pdf-preview', [
-                                'url' => Storage::url($record->path_file)
-                            ]);
+                            return view('filament.components.pdf-preview', ['url' => $url]);
                         } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                            return view('filament.components.image-preview', [
-                                'url' => Storage::url($record->path_file)
-                            ]);
+                            return view('filament.components.image-preview', ['url' => $url]);
                         } else {
                             return view('filament.components.file-preview', [
-                                'url' => Storage::url($record->path_file),
+                                'url' => $url,
                                 'fileName' => $record->nama_file
                             ]);
                         }
                     })
-                    ->modalActions([])
-                    ->url(fn (DokumenPengajuan $record) => Storage::url($record->path_file), true)
-                    ->hidden(fn (DokumenPengajuan $record) => !$record->path_file),
-            ])
-            ->actions([
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->visible(fn (DokumenPengajuan $record) => !empty($record->path_file)),
                 Tables\Actions\Action::make('verifikasi')
                     ->label('Verifikasi')
                     ->icon('heroicon-o-check-badge')
@@ -190,15 +194,14 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ->action(function (DokumenPengajuan $record, array $data) {
                         $record->update([
                             'status_verifikasi' => $data['status_verifikasi'],
-                            'catatan_verifikasi' => $data['catatan_verifikasi'],
+                            'catatan_verifikasi' => $data['catatan_verifikasi'] ?? null,
                             'verifikator_id' => Auth::id(),
                             'tanggal_verifikasi' => now(),
                         ]);
                     })
-                    ->after(function (DokumenPengajuan $record) {
-                        // Optional: Add notification or logging after verification
-                    })
+                    ->successNotificationTitle('Dokumen berhasil diverifikasi')
                     ->visible(fn (DokumenPengajuan $record) => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas'])),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
@@ -236,6 +239,7 @@ class DokumenPengajuanRelationManager extends RelationManager
                             });
                         })
                         ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Dokumen berhasil diverifikasi secara massal')
                         ->visible(fn () => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas'])),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
