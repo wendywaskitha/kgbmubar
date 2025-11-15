@@ -63,6 +63,9 @@ class PengajuanKgbResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->where('status', '!=', 'draft');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('pegawai.nip')
                     ->label('NIP')
@@ -82,7 +85,7 @@ class PengajuanKgbResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'draft' => 'gray',
                         'diajukan' => 'warning',
                         'verifikasi_dinas' => 'info',
@@ -123,8 +126,8 @@ class PengajuanKgbResource extends Resource
                     ->label('Verifikasi & Ajukan ke Kabupaten')
                     ->icon('heroicon-o-check')
                     ->color('primary')
-                    ->visible(fn ($record) =>
-                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
+                    ->visible(fn($record) =>
+                    in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
                         && $record->status === 'diajukan')
                     ->form([
                         Forms\Components\Checkbox::make('verifikasi_complete')
