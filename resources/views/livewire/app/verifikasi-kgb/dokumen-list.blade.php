@@ -126,23 +126,40 @@
         </div>
     @endif
 
-    {{-- Modal untuk View Document --}}
+    {{-- Modal untuk View Document - Centered --}}
     <div 
-        x-data="{ open: false, documentUrl: '', isImage: false, fileName: '' }"
+        x-data="{ 
+            open: false, 
+            documentUrl: '', 
+            isImage: false, 
+            fileName: '',
+            init() {
+                // Debug log
+                this.$watch('open', value => {
+                    if (value) {
+                        console.log('Modal opened with URL:', this.documentUrl);
+                        console.log('Is Image:', this.isImage);
+                    }
+                });
+            }
+        }"
         @open-document-modal.window="
+            console.log('Event received:', $event.detail);
             open = true; 
             documentUrl = $event.detail.url;
             isImage = $event.detail.isImage || false;
             fileName = $event.detail.fileName || 'Dokumen';
         "
         x-show="open"
+        @keydown.escape.window="open = false"
         style="display: none;"
         class="fixed inset-0 z-50 overflow-y-auto"
         aria-labelledby="modal-title"
         role="dialog"
         aria-modal="true">
         
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        {{-- Centered Modal Container --}}
+        <div class="flex items-center justify-center min-h-screen p-4">
             {{-- Backdrop --}}
             <div 
                 x-show="open"
@@ -152,32 +169,31 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
                 @click="open = false"></div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            {{-- Modal Panel --}}
+            {{-- Modal Panel - Centered --}}
             <div 
                 x-show="open"
                 x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full sm:p-6">
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col"
+                @click.stop>
                 
                 {{-- Header --}}
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 truncate">Preview Dokumen</h3>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">Preview Dokumen</h3>
                         <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate" x-text="fileName"></p>
                     </div>
                     <button 
                         @click="open = false"
                         type="button"
-                        class="ml-3 flex-shrink-0 rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        class="ml-4 flex-shrink-0 rounded-md bg-white dark:bg-gray-800 p-1 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -185,37 +201,64 @@
                 </div>
 
                 {{-- Content --}}
-                <div class="w-full h-[400px] sm:h-[600px]">
-                    {{-- Image Preview --}}
-                    <div x-show="isImage" class="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded overflow-auto">
-                        <img 
-                            :src="documentUrl" 
-                            :alt="fileName"
-                            class="max-w-full max-h-full object-contain"
-                            loading="lazy" />
-                    </div>
+                <div class="flex-1 p-4 sm:p-6 overflow-auto">
+                    <div class="w-full h-full min-h-[400px] sm:min-h-[500px]">
+                        {{-- Loading State --}}
+                        <div x-show="!documentUrl" class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <svg class="animate-spin h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Memuat dokumen...</p>
+                            </div>
+                        </div>
 
-                    {{-- PDF Preview --}}
-                    <div x-show="!isImage" class="w-full h-full">
-                        <iframe 
-                            :src="documentUrl" 
-                            class="w-full h-full border border-gray-300 dark:border-gray-600 rounded"
-                            frameborder="0"></iframe>
+                        {{-- Image Preview --}}
+                        <div x-show="documentUrl && isImage" class="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+                            <img 
+                                :src="documentUrl" 
+                                :alt="fileName"
+                                class="max-w-full max-h-full object-contain"
+                                @error="console.error('Image load error:', $event)"
+                                loading="eager" />
+                        </div>
+
+                        {{-- PDF Preview --}}
+                        <div x-show="documentUrl && !isImage" class="h-full">
+                            <iframe 
+                                :src="documentUrl" 
+                                class="w-full h-full min-h-[500px] border-0 rounded-lg"
+                                @error="console.error('PDF load error:', $event)"
+                                frameborder="0"></iframe>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Download Link --}}
-                <div class="mt-4 flex justify-end">
-                    <a 
-                        :href="documentUrl" 
-                        target="_blank"
-                        download
-                        class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download
-                    </a>
+                {{-- Footer --}}
+                <div class="flex items-center justify-between p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        <span x-show="isImage">Gambar</span>
+                        <span x-show="!isImage">Dokumen PDF</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button
+                            @click="open = false"
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            Tutup
+                        </button>
+                        <a 
+                            :href="documentUrl" 
+                            target="_blank"
+                            download
+                            class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
