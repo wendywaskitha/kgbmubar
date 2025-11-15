@@ -3,7 +3,6 @@
         @forelse($dokumens as $dokumen)
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    {{-- Info Dokumen --}}
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start gap-2 sm:gap-3">
                             <div class="flex-shrink-0 hidden sm:block">
@@ -11,7 +10,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
-
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                     {{ ucwords(str_replace('_', ' ', $dokumen->jenis_dokumen)) }}
@@ -32,10 +30,7 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Actions --}}
                     <div class="flex flex-wrap items-center gap-2 sm:ml-4">
-                        {{-- Status Badge --}}
                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
                             @if($dokumen->status_verifikasi === 'valid') bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20
                             @elseif($dokumen->status_verifikasi === 'tidak_valid') bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20
@@ -44,8 +39,6 @@
                             @endif">
                             {{ ucfirst(str_replace('_', ' ', $dokumen->status_verifikasi)) }}
                         </span>
-
-                        {{-- Button View --}}
                         <button
                             wire:click="viewDokumen({{ $dokumen->id }})"
                             type="button"
@@ -57,8 +50,6 @@
                             </svg>
                             <span class="hidden sm:inline">Lihat</span>
                         </button>
-
-                        {{-- Button Verifikasi Toggle --}}
                         <button
                             wire:click="verifikasiDokumen({{ $dokumen->id }})"
                             type="button"
@@ -83,8 +74,6 @@
                         </button>
                     </div>
                 </div>
-
-                {{-- Catatan Verifikasi --}}
                 @if($dokumen->catatan_verifikasi)
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Catatan Verifikasi:</p>
@@ -102,8 +91,6 @@
             </div>
         @endforelse
     </div>
-
-    {{-- Summary Status --}}
     @if($dokumens->count() > 0)
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -113,7 +100,6 @@
                     <span class="font-medium">{{ $dokumens->count() }}</span>
                     dokumen terverifikasi
                 </div>
-
                 @if($dokumens->where('status_verifikasi', 'valid')->count() === $dokumens->count())
                     <div class="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,131 +111,73 @@
             </div>
         </div>
     @endif
-
-    {{-- Modal untuk View Document - Centered --}}
     <div 
-        x-data="{ 
-            open: false, 
-            documentUrl: '', 
-            isImage: false, 
-            fileName: ''
-        }"
-        @open-document-modal.window="
-            open = true; 
-            documentUrl = $event.detail.url;
-            isImage = $event.detail.isImage || false;
-            fileName = $event.detail.fileName || 'Dokumen';
-            console.log('Modal opened:', {url: documentUrl, isImage: isImage, fileName: fileName});
-        "
+        x-data="{open:false,documentUrl:'',isImage:false,fileName:''}"
+        @open-document-modal.window="open=true;documentUrl=$event.detail.url;isImage=$event.detail.isImage||false;fileName=$event.detail.fileName||'Dokumen';"
         x-show="open"
-        @keydown.escape.window="open = false"
-        style="display: none;"
+        @keydown.escape.window="open=false"
+        style="display: none"
         class="fixed inset-0 z-50 overflow-y-auto"
         aria-labelledby="modal-title"
         role="dialog"
         aria-modal="true">
-        
-        {{-- Centered Modal Container --}}
         <div class="flex items-center justify-center min-h-screen p-4">
-            {{-- Backdrop --}}
-            <div 
-                x-show="open"
-                x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
-                @click="open = false"></div>
-
-            {{-- Modal Panel - Centered --}}
-            <div 
-                x-show="open"
-                x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0 scale-95"
-                x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100 scale-100"
-                x-transition:leave-end="opacity-0 scale-95"
-                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col z-10"
-                @click.stop>
-                
-                {{-- Header --}}
+            <div x-show="open"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
+                 @click="open=false"></div>
+            <div x-show="open"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col z-10"
+                 @click.stop>
                 <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex-1 min-w-0">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">Preview Dokumen</h3>
                         <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate" x-text="fileName"></p>
                     </div>
-                    <button 
-                        @click="open = false"
-                        type="button"
-                        class="ml-4 flex-shrink-0 rounded-md bg-white dark:bg-gray-800 p-1 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <button @click="open=false" type="button" class="ml-4 flex-shrink-0 rounded-md bg-white dark:bg-gray-800 p-1 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-
-                {{-- Content --}}
                 <div class="flex-1 p-4 sm:p-6 overflow-auto">
                     <div class="w-full h-full min-h-[400px] sm:min-h-[500px]">
-                        {{-- Loading State --}}
-                        <template x-if="!documentUrl">
-                            <div class="flex items-center justify-center h-full">
-                                <div class="text-center">
-                                    <svg class="animate-spin h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Memuat dokumen...</p>
-                                </div>
+                        <div x-show="!documentUrl" class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <svg class="animate-spin h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Memuat dokumen...</p>
                             </div>
-                        </template>
-
-                        {{-- Image Preview --}}
-                        <template x-if="documentUrl && isImage">
-                            <div class="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
-                                <img 
-                                    :src="documentUrl" 
-                                    :alt="fileName"
-                                    class="max-w-full max-h-full object-contain"
-                                    @error="console.error('Image load error:', $event)"
-                                    loading="eager" />
-                            </div>
-                        </template>
-
-                        {{-- PDF Preview --}}
-                        <template x-if="documentUrl && !isImage">
-                            <div class="h-full">
-                                <iframe 
-                                    :src="documentUrl" 
-                                    class="w-full h-full min-h-[500px] border-0 rounded-lg"
-                                    @error="console.error('PDF load error:', $event)"
-                                    frameborder="0"></iframe>
-                            </div>
-                        </template>
+                        </div>
+                        <div x-show="documentUrl && isImage" class="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+                            <img :src="documentUrl" :alt="fileName" class="max-w-full max-h-full object-contain" loading="eager" />
+                        </div>
+                        <div x-show="documentUrl && !isImage" class="h-full">
+                            <iframe :src="documentUrl" class="w-full h-full min-h-[500px] border-0 rounded-lg" frameborder="0"></iframe>
+                        </div>
                     </div>
                 </div>
-
-                {{-- Footer --}}
                 <div class="flex items-center justify-between p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
                     <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <span x-show="isImage">Gambar</span>
                         <span x-show="!isImage">Dokumen PDF</span>
                     </div>
                     <div class="flex gap-2">
-                        <button
-                            @click="open = false"
-                            type="button"
-                            class="inline-flex items-center gap-2 rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            Tutup
-                        </button>
-                        <a 
-                            :href="documentUrl" 
-                            target="_blank"
-                            download
-                            class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                        <button @click="open=false" type="button" class="inline-flex items-center gap-2 rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Tutup</button>
+                        <a :href="documentUrl" target="_blank" download class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
