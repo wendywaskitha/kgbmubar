@@ -175,6 +175,7 @@ class PengajuanKgbResource extends Resource
             'index' => Pages\ListPengajuanKgbs::route('/'),
             'create' => Pages\CreatePengajuanKgb::route('/create'),
             'edit' => Pages\EditPengajuanKgb::route('/{record}/edit'),
+            'view' => Pages\ViewPengajuanKgb::route('/{record}'),
         ];
     }
 }
