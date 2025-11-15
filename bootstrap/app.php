@@ -14,6 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\TenantContextMiddleware::class);
     })
+    ->withCommands()
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
+        // Schedule the KGB reminder command to run daily
+        $schedule->command('notifications:send-kgb-reminders')->daily();
+
+        // Schedule the report generation command
+        $schedule->command('reports:generate-scheduled --type=monthly --send-email')->monthlyOn(1, '01:00');
+        $schedule->command('reports:generate-scheduled --type=weekly --send-email')->weeklyOn(1, '01:00'); // Every Monday
+        $schedule->command('reports:generate-scheduled --type=daily --send-email')->dailyAt('01:00');
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

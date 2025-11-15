@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\PengajuanKgbObserver;
 
 class PengajuanKgb extends Model
 {
@@ -57,6 +58,15 @@ class PengajuanKgb extends Model
         'tanggal_approve' => 'datetime',
         'tanggal_selesai' => 'datetime',
     ];
+
+    /**
+     * Boot the model and register the observer
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::observe(PengajuanKgbObserver::class);
+    }
 
     /**
      * Get the tenant that owns the pengajuan.

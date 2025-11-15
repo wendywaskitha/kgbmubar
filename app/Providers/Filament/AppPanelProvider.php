@@ -37,6 +37,7 @@ class AppPanelProvider extends PanelProvider
             ->widgets([
                 // App widgets can be added here
             ])
+            ->databaseNotifications()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

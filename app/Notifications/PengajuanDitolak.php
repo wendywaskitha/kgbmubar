@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\PengajuanKgb;
 
-class VerifikasiSelesai extends Notification
+class PengajuanDitolak extends Notification
 {
     use Queueable;
 
@@ -38,11 +38,12 @@ class VerifikasiSelesai extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Pengajuan Diteruskan ke Kabupaten')
+            ->subject('Pengajuan KGB Ditolak')
             ->greeting('Hallo ' . $notifiable->name . ',')
-            ->line('Pengajuan KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah lolos verifikasi dinas.')
-            ->action('Lihat Status', url('/admin/pengajuan-kgb/' . $this->pengajuan->id . '/edit'))
-            ->line('Pengajuan sekarang menunggu verifikasi dari Kabupaten.');
+            ->line('Pengajuan KGB atas nama ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah ditolak.')
+            ->line('Alasan penolakan: ' . $this->pengajuan->catatan ?? 'Tidak disebutkan')
+            ->action('Lihat Detail Pengajuan', url('/app/pengajuan-kgb/' . $this->pengajuan->id . '/edit'))
+            ->line('Silakan ajukan kembali jika masih eligible.');
     }
 
     /**
@@ -53,13 +54,14 @@ class VerifikasiSelesai extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Pengajuan Diteruskan ke Kabupaten',
-            'body' => 'Pengajuan KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah lolos verifikasi dinas',
-            'icon' => 'arrow-up-circle',
-            'color' => 'success',
+            'title' => '❌ Pengajuan Ditolak',
+            'body' => 'Pengajuan KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' ditolak. Klik untuk lihat alasan.',
+            'icon' => 'x-circle',
+            'color' => 'danger',
             'pengajuan_id' => $this->pengajuan->id,
             'pegawai_nama' => $this->pengajuan->pegawai?->nama,
             'pegawai_nip' => $this->pengajuan->pegawai?->nip,
+            'catatan' => $this->pengajuan->catatan ?? 'Tidak disebutkan',
         ];
     }
 }

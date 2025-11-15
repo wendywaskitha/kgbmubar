@@ -44,18 +44,18 @@ Based on the PRD document (prd.md), here are the implementation tasks organized 
 ## Phase 3: Notifications & Reporting (3 minggu)
 
 ### Week 9-10: Notification System
-- [ ] Setup FilamentPHP database notifications
-- [ ] Create 7 notification types (PengajuanBaru, VerifikasiSelesai, etc.)
-- [ ] Implement notification UI components (bell icon, dropdown, center)
-- [ ] Implement email notifications integration
-- [ ] Create reminder system (manual & auto-trigger)
+- [x] Setup FilamentPHP database notifications
+- [x] Create 7 notification types (PengajuanBaru, VerifikasiSelesai, etc.)
+- [x] Implement notification UI components (bell icon, dropdown, center)
+- [x] Implement email notifications integration
+- [x] Create reminder system (manual & auto-trigger)
 
 ### Week 11: Reporting Module
-- [ ] Create reporting module for `/admin` panel
-- [ ] Create reporting module for `/app` panel
-- [ ] Implement charts & analytics (Bar, Line, Donut charts)
-- [ ] Add Excel/PDF export functionality
-- [ ] Implement scheduled reports
+- [x] Create reporting module for `/admin` panel
+- [x] Create reporting module for `/app` panel
+- [x] Implement charts & analytics (Bar, Line, Donut charts)
+- [x] Add Excel/PDF export functionality
+- [x] Implement scheduled reports
 
 ## Phase 4: SK Management & Finalization (2 minggu)
 

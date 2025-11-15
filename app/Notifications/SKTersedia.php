@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\PengajuanKgb;
 
-class VerifikasiSelesai extends Notification
+class SKTersedia extends Notification
 {
     use Queueable;
 
@@ -38,11 +38,12 @@ class VerifikasiSelesai extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Pengajuan Diteruskan ke Kabupaten')
+            ->subject('SK KGB Tersedia untuk Diunduh')
             ->greeting('Hallo ' . $notifiable->name . ',')
-            ->line('Pengajuan KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah lolos verifikasi dinas.')
-            ->action('Lihat Status', url('/admin/pengajuan-kgb/' . $this->pengajuan->id . '/edit'))
-            ->line('Pengajuan sekarang menunggu verifikasi dari Kabupaten.');
+            ->line('SK KGB atas nama ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' sudah tersedia.')
+            ->line('Nomor SK: ' . $this->pengajuan->no_sk)
+            ->action('Download SK', url('/pegawai/sk/' . $this->pengajuan->id . '/download'))
+            ->line('Terima kasih telah menggunakan layanan kami.');
     }
 
     /**
@@ -53,13 +54,14 @@ class VerifikasiSelesai extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Pengajuan Diteruskan ke Kabupaten',
-            'body' => 'Pengajuan KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah lolos verifikasi dinas',
-            'icon' => 'arrow-up-circle',
-            'color' => 'success',
+            'title' => '📄 SK KGB Siap Diunduh',
+            'body' => 'SK KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' sudah tersedia dengan No SK: ' . $this->pengajuan->no_sk,
+            'icon' => 'document-download',
+            'color' => 'primary',
             'pengajuan_id' => $this->pengajuan->id,
             'pegawai_nama' => $this->pengajuan->pegawai?->nama,
             'pegawai_nip' => $this->pengajuan->pegawai?->nip,
+            'no_sk' => $this->pengajuan->no_sk,
         ];
     }
 }

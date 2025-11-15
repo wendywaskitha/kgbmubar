@@ -37,6 +37,7 @@ class PegawaiPanelProvider extends PanelProvider
             ->widgets([
                 // Pegawai widgets can be added here
             ])
+            ->databaseNotifications()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

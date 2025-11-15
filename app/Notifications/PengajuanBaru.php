@@ -6,17 +6,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Models\PengajuanKgb;
 
 class PengajuanBaru extends Notification
 {
     use Queueable;
 
+    protected $pengajuan;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(PengajuanKgb $pengajuan)
     {
-        //
+        $this->pengajuan = $pengajuan;
     }
 
     /**
@@ -26,7 +29,7 @@ class PengajuanBaru extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -35,9 +38,11 @@ class PengajuanBaru extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Pengajuan KGB Baru')
+            ->greeting('Hallo ' . $notifiable->name . ',')
+            ->line($this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah mengajukan KGB.')
+            ->action('Lihat Detail', url('/app/pengajuan-kgb/' . $this->pengajuan->id . '/edit'))
+            ->line('Silakan lakukan verifikasi sesuai dengan prosedur yang berlaku.');
     }
 
     /**
@@ -45,10 +50,16 @@ class PengajuanBaru extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            //
+            'title' => 'Pengajuan KGB Baru',
+            'body' => $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah mengajukan KGB',
+            'icon' => 'document-text',
+            'color' => 'primary',
+            'pengajuan_id' => $this->pengajuan->id,
+            'pegawai_nama' => $this->pengajuan->pegawai?->nama,
+            'pegawai_nip' => $this->pengajuan->pegawai?->nip,
         ];
     }
 }

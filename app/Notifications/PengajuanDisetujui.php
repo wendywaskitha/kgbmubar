@@ -6,17 +6,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Models\PengajuanKgb;
 
 class PengajuanDisetujui extends Notification
 {
     use Queueable;
 
+    protected $pengajuan;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(PengajuanKgb $pengajuan)
     {
-        //
+        $this->pengajuan = $pengajuan;
     }
 
     /**
@@ -26,7 +29,7 @@ class PengajuanDisetujui extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -35,9 +38,12 @@ class PengajuanDisetujui extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Pengajuan KGB Disetujui!')
+            ->greeting('Hallo ' . $notifiable->name . ',')
+            ->line('Selamat! KGB atas nama ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah disetujui.')
+            ->line('Nomor SK: ' . $this->pengajuan->no_sk)
+            ->action('Lihat SK', url('/pegawai/sk/' . $this->pengajuan->id . '/download'))
+            ->line('Terima kasih telah menggunakan layanan kami.');
     }
 
     /**
@@ -45,10 +51,17 @@ class PengajuanDisetujui extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            //
+            'title' => '🎉 Pengajuan KGB Disetujui!',
+            'body' => 'Selamat! KGB ' . $this->pengajuan->pegawai?->nama . ' - ' . $this->pengajuan->pegawai?->nip . ' telah disetujui dengan No SK: ' . $this->pengajuan->no_sk,
+            'icon' => 'check-circle',
+            'color' => 'success',
+            'pengajuan_id' => $this->pengajuan->id,
+            'pegawai_nama' => $this->pengajuan->pegawai?->nama,
+            'pegawai_nip' => $this->pengajuan->pegawai?->nip,
+            'no_sk' => $this->pengajuan->no_sk,
         ];
     }
 }
