@@ -18,30 +18,30 @@ class PengajuanKgbResource extends Resource
     protected static ?string $model = PengajuanKgb::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    
+
     protected static ?string $navigationLabel = 'Pengajuan KGB Saya';
-    
+
     protected static ?string $pluralModelLabel = 'Pengajuan KGB Saya';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('pegawai_id')
-                    ->label('Pegawai')
-                    ->relationship('pegawai', 'name')
-                    ->default(function () {
-                        $user = auth()->user();
-                        $pegawai = $user->pegawai;
-                        return $pegawai ? $pegawai->id : null;
-                    })
-                    ->disabled() // Pegawai can only select themselves
-                    ->required(),
-                
+                // Forms\Components\Select::make('pegawai_id')
+                //     ->label('Pegawai')
+                //     ->relationship('pegawai', 'name')
+                //     ->default(function () {
+                //         $user = auth()->user();
+                //         $pegawai = $user->pegawai;
+                //         return $pegawai ? $pegawai->id : null;
+                //     })
+                //     ->disabled() // Pegawai can only select themselves
+                //     ->required(),
+
                 Forms\Components\DatePicker::make('tmt_kgb_baru')
                     ->label('TMT KGB Baru')
                     ->required(),
-                
+
                 Forms\Components\Select::make('jenis_pengajuan')
                     ->label('Jenis Pengajuan')
                     ->options([
@@ -50,11 +50,11 @@ class PengajuanKgbResource extends Resource
                     ->default('mandiri')
                     ->required()
                     ->disabled(), // Only mandiri for pegawai panel
-                
+
                 Forms\Components\Textarea::make('catatan_verifikasi_dinas')
                     ->label('Catatan Verifikasi Dinas')
                     ->disabled(),
-                
+
                 Forms\Components\Textarea::make('catatan_verifikasi_kabupaten')
                     ->label('Catatan Verifikasi Kabupaten')
                     ->disabled(),
@@ -69,17 +69,17 @@ class PengajuanKgbResource extends Resource
                     ->label('NIP')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('pegawai.name')
                     ->label('Nama Pegawai')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('tmt_kgb_baru')
                     ->label('TMT KGB Baru')
                     ->date()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -92,13 +92,13 @@ class PengajuanKgbResource extends Resource
                         'ditolak' => 'danger',
                         default => 'gray',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('jenis_pengajuan')
                     ->label('Jenis Pengajuan')
                     ->formatStateUsing(function ($state) {
                         return $state === 'mandiri' ? 'Mandiri' : 'Admin';
                     }),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -131,7 +131,7 @@ class PengajuanKgbResource extends Resource
                 // Only show pengajuan for the current user's pegawai record
                 $user = auth()->user();
                 $pegawai = $user->pegawai;
-                
+
                 if ($pegawai) {
                     $query->where('pegawai_id', $pegawai->id);
                 } else {
