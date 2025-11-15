@@ -2,16 +2,17 @@
 
 namespace App\Filament\Pegawai\Resources;
 
+use Filament\Forms;
+use Filament\Tables;
+use App\Models\Pegawai;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\PengajuanKgb;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource\Pages;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource\RelationManagers;
-use App\Models\Pegawai;
-use App\Models\PengajuanKgb;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class PengajuanKgbResource extends Resource
 {
@@ -129,7 +130,7 @@ class PengajuanKgbResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
                 // Only show pengajuan for the current user's pegawai record
-                $user = auth()->user();
+                $user = Auth::user();
                 $pegawai = $user->pegawai;
 
                 if ($pegawai) {
