@@ -1,12 +1,13 @@
 <div>
     <div class="space-y-4">
         @forelse($dokumens as $dokumen)
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-shrink-0">
-                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {{-- Info Dokumen --}}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start gap-2 sm:gap-3">
+                            <div class="flex-shrink-0 hidden sm:block">
+                                <svg class="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
@@ -15,16 +16,16 @@
                                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                     {{ ucwords(str_replace('_', ' ', $dokumen->jenis_dokumen)) }}
                                 </p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                                     {{ $dokumen->nama_file }}
                                 </p>
-                                <div class="flex items-center gap-2 mt-1">
+                                <div class="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ $dokumen->tipe_file }} 
+                                        {{ strtoupper($dokumen->tipe_file) }}
                                     </span>
                                     @if($dokumen->tanggal_upload)
                                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                                            • Diupload {{ $dokumen->tanggal_upload->diffForHumans() }}
+                                            • {{ $dokumen->tanggal_upload->diffForHumans() }}
                                         </span>
                                     @endif
                                 </div>
@@ -32,7 +33,8 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 ml-4">
+                    {{-- Actions --}}
+                    <div class="flex flex-wrap items-center gap-2 sm:ml-4">
                         {{-- Status Badge --}}
                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
                             @if($dokumen->status_verifikasi === 'valid') bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20
@@ -47,20 +49,20 @@
                         <button
                             wire:click="viewDokumen({{ $dokumen->id }})"
                             type="button"
-                            class="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            class="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                             title="Lihat Dokumen">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            Lihat
+                            <span class="hidden sm:inline">Lihat</span>
                         </button>
 
                         {{-- Button Verifikasi Toggle --}}
                         <button
                             wire:click="verifikasiDokumen({{ $dokumen->id }})"
                             type="button"
-                            class="inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm
+                            class="inline-flex items-center gap-x-1.5 rounded-md px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-semibold shadow-sm
                                 @if($dokumen->status_verifikasi === 'valid')
                                     bg-green-600 text-white hover:bg-green-500
                                 @else
@@ -68,15 +70,15 @@
                                 @endif"
                             title="{{ $dokumen->status_verifikasi === 'valid' ? 'Batalkan Verifikasi' : 'Verifikasi Dokumen' }}">
                             @if($dokumen->status_verifikasi === 'valid')
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Terverifikasi
+                                <span class="hidden sm:inline">Terverifikasi</span>
                             @else
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Verifikasi
+                                <span class="hidden sm:inline">Verifikasi</span>
                             @endif
                         </button>
                     </div>
@@ -86,7 +88,7 @@
                 @if($dokumen->catatan_verifikasi)
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Catatan Verifikasi:</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $dokumen->catatan_verifikasi }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $dokumen->catatan_verifikasi }}</p>
                     </div>
                 @endif
             </div>
@@ -104,7 +106,7 @@
     {{-- Summary Status --}}
     @if($dokumens->count() > 0)
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="text-sm text-gray-600 dark:text-gray-400">
                     <span class="font-medium">{{ $dokumens->where('status_verifikasi', 'valid')->count() }}</span>
                     dari 
@@ -124,10 +126,15 @@
         </div>
     @endif
 
-    {{-- Modal untuk View PDF --}}
+    {{-- Modal untuk View Document --}}
     <div 
-        x-data="{ open: false, documentUrl: '' }"
-        @open-document-modal.window="open = true; documentUrl = $event.detail.url"
+        x-data="{ open: false, documentUrl: '', isImage: false, fileName: '' }"
+        @open-document-modal.window="
+            open = true; 
+            documentUrl = $event.detail.url;
+            isImage = $event.detail.isImage || false;
+            fileName = $event.detail.fileName || 'Dokumen';
+        "
         x-show="open"
         style="display: none;"
         class="fixed inset-0 z-50 overflow-y-auto"
@@ -136,6 +143,7 @@
         aria-modal="true">
         
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            {{-- Backdrop --}}
             <div 
                 x-show="open"
                 x-transition:enter="ease-out duration-300"
@@ -149,6 +157,7 @@
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
+            {{-- Modal Panel --}}
             <div 
                 x-show="open"
                 x-transition:enter="ease-out duration-300"
@@ -159,23 +168,54 @@
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full sm:p-6">
                 
+                {{-- Header --}}
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Preview Dokumen</h3>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 truncate">Preview Dokumen</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate" x-text="fileName"></p>
+                    </div>
                     <button 
                         @click="open = false"
                         type="button"
-                        class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        class="ml-3 flex-shrink-0 rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div class="w-full h-[600px]">
-                    <iframe 
-                        :src="documentUrl" 
-                        class="w-full h-full border border-gray-300 dark:border-gray-600 rounded"
-                        frameborder="0"></iframe>
+                {{-- Content --}}
+                <div class="w-full h-[400px] sm:h-[600px]">
+                    {{-- Image Preview --}}
+                    <div x-show="isImage" class="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded overflow-auto">
+                        <img 
+                            :src="documentUrl" 
+                            :alt="fileName"
+                            class="max-w-full max-h-full object-contain"
+                            loading="lazy" />
+                    </div>
+
+                    {{-- PDF Preview --}}
+                    <div x-show="!isImage" class="w-full h-full">
+                        <iframe 
+                            :src="documentUrl" 
+                            class="w-full h-full border border-gray-300 dark:border-gray-600 rounded"
+                            frameborder="0"></iframe>
+                    </div>
+                </div>
+
+                {{-- Download Link --}}
+                <div class="mt-4 flex justify-end">
+                    <a 
+                        :href="documentUrl" 
+                        target="_blank"
+                        download
+                        class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download
+                    </a>
                 </div>
             </div>
         </div>
