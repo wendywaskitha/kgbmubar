@@ -4,11 +4,6 @@ namespace App\Filament\App\Resources\PengajuanKgbResource\Pages;
 
 use App\Filament\App\Resources\PengajuanKgbResource;
 use App\Filament\App\Resources\PengajuanKgbResource\RelationManagers\DokumenPengajuanRelationManager;
-use App\Filament\App\Resources\PengajuanKgbResource\Widgets\DokumenVerificationStats;
-use App\Models\DokumenPengajuan;
-use App\Models\PengajuanKgb;
-use App\Models\User;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Pages\Concerns\InteractsWithHeaderActions;
@@ -28,88 +23,13 @@ class VerifikasiPengajuanKgb extends Page
     public function mount(int | string $record): void
     {
         $this->record = $this->resolveRecord($record);
-
         static::authorizeResourceAccess();
     }
 
-    public function getHeaderActions(): array
-    {
-        $dokumens = DokumenPengajuan::where('pengajuan_kgb_id', $this->record->id)->get();
-        $allValid = $dokumens->count() > 0 && $dokumens->every(fn($d) => $d->status_verifikasi === 'valid');
-        $anyInvalid = $dokumens->contains(fn($d) => in_array($d->status_verifikasi, ['tidak_valid', 'revisi']));
-
-        return [
-            \Filament\Actions\Action::make('ajukan_ke_kabupaten')
-                ->label('Ajukan ke Kabupaten')
-                ->icon('heroicon-o-arrow-up-tray')
-                ->color('success')
-                ->action(function () {
-                    $this->record->update([
-                        'status' => 'verifikasi_dinas',
-                        'tanggal_verifikasi_dinas' => now(),
-                    ]);
-
-                    // Send notification to kabupaten admin
-                    $adminKabupaten = User::whereIn('role', ['super_admin', 'verifikator_kabupaten'])
-                        ->where('tenant_id', 1)
-                        ->get();
-                    
-                    foreach ($adminKabupaten as $recipient) {
-                        Notification::make()
-                            ->title('Pengajuan KGB Siap Diverifikasi Kabupaten')
-                            ->body('Pengajuan KGB milik pegawai ' . $this->record->pegawai?->name . ' telah siap diverifikasi oleh admin kabupaten.')
-                            ->icon('heroicon-o-document-text')
-                            ->success()
-                            ->sendToDatabase($recipient);
-                    }
-
-                    Notification::make()
-                        ->title('Berhasil!')
-                        ->body('Pengajuan KGB telah diajukan ke Kabupaten.')
-                        ->success()
-                        ->send();
-
-                    return redirect(PengajuanKgbResource::getUrl('index'));
-                })
-                ->visible(fn() => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas']))
-                ->disabled(!$allValid)
-                ->requiresConfirmation()
-                ->modalHeading('Konfirmasi Pengajuan ke Kabupaten')
-                ->modalDescription('Pastikan semua dokumen telah diverifikasi dengan benar sebelum mengajukan ke Kabupaten.')
-                ->modalSubmitActionLabel('Ajukan'),
-
-            \Filament\Actions\Action::make('kembalikan_ke_pegawai')
-                ->label('Kembalikan ke Pegawai')
-                ->icon('heroicon-o-arrow-uturn-left')
-                ->color('warning')
-                ->action(function () {
-                    $this->record->update([
-                        'status' => 'diajukan',
-                        'jumlah_revisi' => $this->record->jumlah_revisi + 1,
-                    ]);
-
-                    Notification::make()
-                        ->title('Berhasil!')
-                        ->body('Pengajuan KGB telah dikembalikan ke pegawai untuk diperbaiki.')
-                        ->warning()
-                        ->send();
-
-                    return redirect(PengajuanKgbResource::getUrl('index'));
-                })
-                ->visible(fn() => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas']))
-                ->disabled(!$anyInvalid)
-                ->requiresConfirmation()
-                ->modalHeading('Konfirmasi Pengembalian ke Pegawai')
-                ->modalDescription('Pengajuan ini akan dikembalikan ke pegawai untuk perbaikan.')
-                ->modalSubmitActionLabel('Kembalikan'),
-        ];
-    }
-
+    // Hilangkan semua widgets atas
     protected function getHeaderWidgets(): array
     {
-        return [
-            DokumenVerificationStats::class,
-        ];
+        return [];
     }
 
     public function getRelationManagers(): array
