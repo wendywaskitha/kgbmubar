@@ -31,7 +31,7 @@ class DokumenPengajuan extends Model
         'path_file',
         'ukuran_file',
         'tipe_file',
-        'keterangan',
+        // 'keterangan',
         // add other correct columns if needed
     ];
 

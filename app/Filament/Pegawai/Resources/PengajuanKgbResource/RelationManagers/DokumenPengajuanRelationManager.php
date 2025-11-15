@@ -18,11 +18,11 @@ class DokumenPengajuanRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama_dokumen')
+                Forms\Components\TextInput::make('nama_file')
                     ->label('Nama Dokumen')
                     ->required()
                     ->maxLength(255),
-                
+
                 Forms\Components\Select::make('jenis_dokumen')
                     ->label('Jenis Dokumen')
                     ->options([
@@ -36,8 +36,8 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ])
                     ->required()
                     ->searchable(),
-                
-                Forms\Components\FileUpload::make('file_path')
+
+                Forms\Components\FileUpload::make('path_file')
                     ->label('File Dokumen')
                     ->directory('dokumen-pengajuan')
                     ->disk('public')
@@ -46,10 +46,10 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ->acceptedFileTypes(['application/pdf', 'image/*'])
                     ->maxSize(10240), // 10MB max
 
-                Forms\Components\Textarea::make('keterangan')
-                    ->label('Keterangan')
-                    ->maxLength(65535)
-                    ->columnSpanFull(),
+                // Forms\Components\Textarea::make('keterangan')
+                //     ->label('Keterangan')
+                //     ->maxLength(65535)
+                //     ->columnSpanFull(),
             ]);
     }
 
@@ -61,7 +61,7 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ->label('Nama Dokumen')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('jenis_dokumen')
                     ->label('Jenis Dokumen')
                     ->formatStateUsing(function ($state) {
@@ -74,12 +74,12 @@ class DokumenPengajuanRelationManager extends RelationManager
                             'karpeg' => 'Kartu Pegawai',
                             'lainnya' => 'Lainnya',
                         ];
-                        
+
                         return $jenisLabels[$state] ?? $state;
                     })
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('file_path')
                     ->label('File')
                     ->formatStateUsing(function ($record) {
@@ -89,13 +89,13 @@ class DokumenPengajuanRelationManager extends RelationManager
                         return Storage::url($record->file_path);
                     }, true) // Opens in new tab
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('ukuran_file')
                     ->label('Ukuran (KB)')
                     ->formatStateUsing(function ($state) {
                         return round($state / 1024, 2) . ' KB';
                     }),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
