@@ -77,12 +77,12 @@ class DokumenPengajuanRelationManager extends RelationManager
                     })
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('path_file')
-                    ->label('File')
-                    ->formatStateUsing(function ($record) {
-                        return 'File: ' . basename($record->path_file);
-                    })
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('path_file')
+                //     ->label('File')
+                //     ->formatStateUsing(function ($record) {
+                //         return 'File: ' . basename($record->path_file);
+                //     })
+                //     ->searchable(),
                 Tables\Columns\TextColumn::make('status_verifikasi')
                     ->label('Status Verifikasi')
                     ->badge()
