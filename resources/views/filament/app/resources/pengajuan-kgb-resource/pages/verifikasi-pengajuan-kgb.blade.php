@@ -1,19 +1,24 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         {{-- Widget Statistik --}}
-        <x-filament::section>
-            <x-slot name="heading">
-                Statistik Verifikasi Dokumen
-            </x-slot>
-            <div class="mt-4">
-                @if($this->getCachedHeaderWidgets())
+        @if($this->getHeaderWidgets())
+            <x-filament::section>
+                <x-slot name="heading">
+                    Statistik Verifikasi Dokumen
+                </x-slot>
+                <div class="mt-4">
                     <x-filament-widgets::widgets
-                        :widgets="$this->getCachedHeaderWidgets()"
-                        :columns="2"
+                        :widgets="$this->getHeaderWidgets()"
+                        :columns="[
+                            'default' => 2,
+                        ]"
+                        :data="[
+                            'pengajuanId' => $this->record->id,
+                        ]"
                     />
-                @endif
-            </div>
-        </x-filament::section>
+                </div>
+            </x-filament::section>
+        @endif
 
         {{-- Informasi Pegawai --}}
         <x-filament::section>
