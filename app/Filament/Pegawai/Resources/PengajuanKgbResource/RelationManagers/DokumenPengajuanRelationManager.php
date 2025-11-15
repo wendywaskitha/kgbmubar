@@ -57,7 +57,7 @@ class DokumenPengajuanRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_dokumen')
+                Tables\Columns\TextColumn::make('nama_file')
                     ->label('Nama Dokumen')
                     ->searchable()
                     ->sortable(),
@@ -80,21 +80,16 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('file_path')
+                Tables\Columns\TextColumn::make('path_file')
                     ->label('File')
                     ->formatStateUsing(function ($record) {
-                        return 'File: ' . basename($record->file_path);
+                        return 'File: ' . basename($record->path_file);
                     })
                     ->url(function ($record) {
-                        return Storage::url($record->file_path);
+                        return Storage::url($record->path_file);
                     }, true) // Opens in new tab
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('ukuran_file')
-                    ->label('Ukuran (KB)')
-                    ->formatStateUsing(function ($state) {
-                        return round($state / 1024, 2) . ' KB';
-                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')

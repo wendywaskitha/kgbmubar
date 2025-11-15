@@ -18,11 +18,11 @@ class DokumenPengajuanRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama_dokumen')
+                Forms\Components\TextInput::make('nama_file')
                     ->label('Nama Dokumen')
                     ->required()
                     ->maxLength(255),
-                
+
                 Forms\Components\Select::make('jenis_dokumen')
                     ->label('Jenis Dokumen')
                     ->options([
@@ -36,8 +36,8 @@ class DokumenPengajuanRelationManager extends RelationManager
                     ])
                     ->required()
                     ->searchable(),
-                
-                Forms\Components\FileUpload::make('file_path')
+
+                Forms\Components\FileUpload::make('path_file')
                     ->label('File Dokumen')
                     ->directory('dokumen-pengajuan')
                     ->disk('public')
@@ -57,11 +57,11 @@ class DokumenPengajuanRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_dokumen')
+                Tables\Columns\TextColumn::make('nama_file')
                     ->label('Nama Dokumen')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('jenis_dokumen')
                     ->label('Jenis Dokumen')
                     ->formatStateUsing(function ($state) {
@@ -74,28 +74,22 @@ class DokumenPengajuanRelationManager extends RelationManager
                             'karpeg' => 'Kartu Pegawai',
                             'lainnya' => 'Lainnya',
                         ];
-                        
+
                         return $jenisLabels[$state] ?? $state;
                     })
                     ->searchable()
                     ->sortable(),
-                
-                Tables\Columns\TextColumn::make('file_path')
+
+                Tables\Columns\TextColumn::make('path_file')
                     ->label('File')
                     ->formatStateUsing(function ($record) {
-                        return 'File: ' . basename($record->file_path);
+                        return 'File: ' . basename($record->path_file);
                     })
                     ->url(function ($record) {
-                        return Storage::url($record->file_path);
+                        return Storage::url($record->path_file);
                     }, true) // Opens in new tab
                     ->searchable(),
-                
-                Tables\Columns\TextColumn::make('ukuran_file')
-                    ->label('Ukuran (KB)')
-                    ->formatStateUsing(function ($state) {
-                        return round($state / 1024, 2) . ' KB';
-                    }),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
