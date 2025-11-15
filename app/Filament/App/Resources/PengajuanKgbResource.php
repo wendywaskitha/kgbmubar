@@ -34,7 +34,7 @@ class PengajuanKgbResource extends Resource
                     ->relationship('pegawai', 'name')
                     ->required()
                     ->searchable()
-                    ->disabled(), // read-only, agar tidak bisa diubah oleh dinas
+                    ->disabled(),
 
                 Forms\Components\DatePicker::make('tmt_kgb_baru')
                     ->label('TMT KGB Baru')
@@ -122,13 +122,27 @@ class PengajuanKgbResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+                
+                // Action Verifikasi - Redirect ke Custom Page
+                Tables\Actions\Action::make('verifikasi')
+                    ->label('Verifikasi Dokumen')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->color('success')
+                    ->visible(fn($record) =>
+                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
+                        && $record->status === 'diajukan'
+                    )
+                    ->url(fn($record) => static::getUrl('verifikasi', ['record' => $record->id]))
+                    ->openUrlInNewTab(false),
+
                 Tables\Actions\Action::make('verifikasiDinas')
                     ->label('Verifikasi & Ajukan ke Kabupaten')
                     ->icon('heroicon-o-check')
                     ->color('primary')
                     ->visible(fn($record) =>
-                    in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
-                        && $record->status === 'diajukan')
+                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
+                        && $record->status === 'diajukan'
+                    )
                     ->form([
                         Forms\Components\Checkbox::make('verifikasi_complete')
                             ->label('Saya telah memverifikasi dan dokumen sudah lengkap & benar')
@@ -144,10 +158,11 @@ class PengajuanKgbResource extends Resource
                                 'catatan_verifikasi_dinas' => $data['catatan_verifikasi_dinas'] ?? null,
                                 'tanggal_verifikasi_dinas' => now(),
                             ]);
-                            // send notification ke admin panel kabupaten
+                            
                             $adminKabupaten = User::whereIn('role', ['super_admin', 'verifikator_kabupaten'])
-                                ->where('tenant_id', 1) // tenant pusat/kab
+                                ->where('tenant_id', 1)
                                 ->get();
+                            
                             foreach ($adminKabupaten as $recipient) {
                                 Notification::make()
                                     ->title('Pengajuan KGB Siap Diverifikasi Kabupaten')
@@ -179,6 +194,7 @@ class PengajuanKgbResource extends Resource
             'create' => Pages\CreatePengajuanKgb::route('/create'),
             'edit' => Pages\EditPengajuanKgb::route('/{record}/edit'),
             'view' => Pages\ViewPengajuanKgb::route('/{record}'),
+            'verifikasi' => Pages\VerifikasiPengajuanKgb::route('/{record}/verifikasi'),
         ];
     }
 }
