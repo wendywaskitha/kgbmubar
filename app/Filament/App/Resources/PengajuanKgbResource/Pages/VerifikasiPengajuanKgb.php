@@ -7,36 +7,27 @@ use App\Filament\App\Resources\PengajuanKgbResource\RelationManagers\DokumenPeng
 use App\Filament\App\Resources\PengajuanKgbResource\Widgets\DokumenVerificationStats;
 use App\Models\DokumenPengajuan;
 use App\Models\PengajuanKgb;
+use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Illuminate\Support\Facades\Auth;
 
 class VerifikasiPengajuanKgb extends Page
 {
+    use InteractsWithRecord;
+
     protected static string $resource = PengajuanKgbResource::class;
 
     protected static string $view = 'filament.app.resources.pengajuan-kgb-resource.pages.verifikasi-pengajuan-kgb';
 
     protected static ?string $title = 'Verifikasi Dokumen KGB';
 
-    public PengajuanKgb $record;
-
     public function mount(int | string $record): void
     {
         $this->record = $this->resolveRecord($record);
 
         static::authorizeResourceAccess();
-    }
-
-    protected function resolveRecord(int | string $key): PengajuanKgb
-    {
-        $record = static::getResource()::getEloquentQuery()->find($key);
-
-        if (!$record) {
-            abort(404);
-        }
-
-        return $record;
     }
 
     public function getHeaderActions(): array
@@ -56,6 +47,20 @@ class VerifikasiPengajuanKgb extends Page
                         'tanggal_verifikasi_dinas' => now(),
                     ]);
 
+                    // Send notification to kabupaten admin
+                    $adminKabupaten = User::whereIn('role', ['super_admin', 'verifikator_kabupaten'])
+                        ->where('tenant_id', 1)
+                        ->get();
+                    
+                    foreach ($adminKabupaten as $recipient) {
+                        Notification::make()
+                            ->title('Pengajuan KGB Siap Diverifikasi Kabupaten')
+                            ->body('Pengajuan KGB milik pegawai ' . $this->record->pegawai?->name . ' telah siap diverifikasi oleh admin kabupaten.')
+                            ->icon('heroicon-o-document-text')
+                            ->success()
+                            ->sendToDatabase($recipient);
+                    }
+
                     Notification::make()
                         ->title('Berhasil!')
                         ->body('Pengajuan KGB telah diajukan ke Kabupaten.')
@@ -64,7 +69,7 @@ class VerifikasiPengajuanKgb extends Page
 
                     return redirect(PengajuanKgbResource::getUrl('index'));
                 })
-                ->visible(fn() => Auth::user()->role === 'verifikator_dinas' || Auth::user()->role === 'admin_dinas')
+                ->visible(fn() => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas']))
                 ->disabled(!$allValid)
                 ->requiresConfirmation()
                 ->modalHeading('Konfirmasi Pengajuan ke Kabupaten')
@@ -77,7 +82,7 @@ class VerifikasiPengajuanKgb extends Page
                 ->color('warning')
                 ->action(function () {
                     $this->record->update([
-                        'status' => 'diajukan', // Change back to initial submitted state
+                        'status' => 'diajukan',
                         'jumlah_revisi' => $this->record->jumlah_revisi + 1,
                     ]);
 
@@ -89,7 +94,7 @@ class VerifikasiPengajuanKgb extends Page
 
                     return redirect(PengajuanKgbResource::getUrl('index'));
                 })
-                ->visible(fn() => Auth::user()->role === 'verifikator_dinas' || Auth::user()->role === 'admin_dinas')
+                ->visible(fn() => in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas']))
                 ->disabled(!$anyInvalid)
                 ->requiresConfirmation()
                 ->modalHeading('Konfirmasi Pengembalian ke Pegawai')
@@ -101,9 +106,14 @@ class VerifikasiPengajuanKgb extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            DokumenVerificationStats::class => [
-                'pengajuanId' => $this->record->id,
-            ],
+            DokumenVerificationStats::class,
+        ];
+    }
+
+    public function getRelationManagers(): array
+    {
+        return [
+            DokumenPengajuanRelationManager::class,
         ];
     }
 }

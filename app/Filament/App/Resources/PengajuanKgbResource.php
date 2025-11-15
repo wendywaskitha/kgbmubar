@@ -129,7 +129,7 @@ class PengajuanKgbResource extends Resource
                     ->url(fn($record) => static::getUrl('verifikasi', ['record' => $record]))
                     ->visible(fn($record) =>
                         in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas'])
-                        && in_array($record->status, ['diajukan', 'verifikasi_dinas', 'disetujui', 'ditolak'])
+                        && in_array($record->status, ['diajukan', 'verifikasi_dinas'])
                     ),
                 Tables\Actions\Action::make('verifikasiDinas')
                     ->label('Ajukan ke Kabupaten')
@@ -186,10 +186,9 @@ class PengajuanKgbResource extends Resource
         return [
             'index' => Pages\ListPengajuanKgbs::route('/'),
             'create' => Pages\CreatePengajuanKgb::route('/create'),
-            'verifikasi' => Pages\VerifikasiPengajuanKgb::route('/{record}/verifikasi'),
             'edit' => Pages\EditPengajuanKgb::route('/{record}/edit'),
             'view' => Pages\ViewPengajuanKgb::route('/{record}'),
-
+            'verifikasi' => Pages\VerifikasiPengajuanKgb::route('/{record}/verifikasi'),
         ];
     }
 }
