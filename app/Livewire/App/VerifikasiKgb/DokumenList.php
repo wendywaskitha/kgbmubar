@@ -13,6 +13,7 @@ class DokumenList extends Component
     public $pengajuanId;
     public $dokumens;
     public $selectedDokumen = null;
+    public $allValid = false;
 
     public function mount($pengajuanId)
     {
@@ -25,12 +26,16 @@ class DokumenList extends Component
         $this->dokumens = DokumenPengajuan::where('pengajuan_kgb_id', $this->pengajuanId)
             ->orderBy('jenis_dokumen')
             ->get();
+        $this->allValid = $this->dokumens->every(function($item){
+            return $item->status_verifikasi === 'valid';
+        }) && $this->dokumens->count() > 0;
     }
+
+    // ...other unchanged methods...
 
     public function viewDokumen($dokumenId)
     {
         $dokumen = DokumenPengajuan::find($dokumenId);
-
         if (!$dokumen) {
             Notification::make()
                 ->title('Dokumen tidak ditemukan')
@@ -38,11 +43,9 @@ class DokumenList extends Component
                 ->send();
             return;
         }
-
         $fileUrl = asset('storage/' . ltrim($dokumen->path_file, '/'));
         $extension = strtolower(pathinfo($dokumen->path_file, PATHINFO_EXTENSION));
         $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']);
-
         $this->dispatch('open-document-modal', [
             'url' => $fileUrl,
             'isImage' => $isImage,
