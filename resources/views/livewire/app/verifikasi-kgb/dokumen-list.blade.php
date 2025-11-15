@@ -132,23 +132,14 @@
             open: false, 
             documentUrl: '', 
             isImage: false, 
-            fileName: '',
-            init() {
-                // Debug log
-                this.$watch('open', value => {
-                    if (value) {
-                        console.log('Modal opened with URL:', this.documentUrl);
-                        console.log('Is Image:', this.isImage);
-                    }
-                });
-            }
+            fileName: ''
         }"
         @open-document-modal.window="
-            console.log('Event received:', $event.detail);
             open = true; 
             documentUrl = $event.detail.url;
             isImage = $event.detail.isImage || false;
             fileName = $event.detail.fileName || 'Dokumen';
+            console.log('Modal opened:', {url: documentUrl, isImage: isImage, fileName: fileName});
         "
         x-show="open"
         @keydown.escape.window="open = false"
@@ -181,7 +172,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col"
+                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col z-10"
                 @click.stop>
                 
                 {{-- Header --}}
@@ -204,34 +195,40 @@
                 <div class="flex-1 p-4 sm:p-6 overflow-auto">
                     <div class="w-full h-full min-h-[400px] sm:min-h-[500px]">
                         {{-- Loading State --}}
-                        <div x-show="!documentUrl" class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <svg class="animate-spin h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Memuat dokumen...</p>
+                        <template x-if="!documentUrl">
+                            <div class="flex items-center justify-center h-full">
+                                <div class="text-center">
+                                    <svg class="animate-spin h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Memuat dokumen...</p>
+                                </div>
                             </div>
-                        </div>
+                        </template>
 
                         {{-- Image Preview --}}
-                        <div x-show="documentUrl && isImage" class="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
-                            <img 
-                                :src="documentUrl" 
-                                :alt="fileName"
-                                class="max-w-full max-h-full object-contain"
-                                @error="console.error('Image load error:', $event)"
-                                loading="eager" />
-                        </div>
+                        <template x-if="documentUrl && isImage">
+                            <div class="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+                                <img 
+                                    :src="documentUrl" 
+                                    :alt="fileName"
+                                    class="max-w-full max-h-full object-contain"
+                                    @error="console.error('Image load error:', $event)"
+                                    loading="eager" />
+                            </div>
+                        </template>
 
                         {{-- PDF Preview --}}
-                        <div x-show="documentUrl && !isImage" class="h-full">
-                            <iframe 
-                                :src="documentUrl" 
-                                class="w-full h-full min-h-[500px] border-0 rounded-lg"
-                                @error="console.error('PDF load error:', $event)"
-                                frameborder="0"></iframe>
-                        </div>
+                        <template x-if="documentUrl && !isImage">
+                            <div class="h-full">
+                                <iframe 
+                                    :src="documentUrl" 
+                                    class="w-full h-full min-h-[500px] border-0 rounded-lg"
+                                    @error="console.error('PDF load error:', $event)"
+                                    frameborder="0"></iframe>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
