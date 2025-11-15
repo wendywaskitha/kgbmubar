@@ -13,7 +13,10 @@ class ListPengajuanKgbs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Buat Pengajuan')
+                ->icon('heroicon-o-plus')
+                ->color('primary'),
         ];
     }
 }
