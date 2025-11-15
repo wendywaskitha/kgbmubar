@@ -25,12 +25,14 @@ class DokumenPengajuan extends Model
     protected $fillable = [
         'tenant_id',
         'pengajuan_kgb_id',
-        'nama_dokumen',
+        // corrected to match DB:
+        'nama_file',
         'jenis_dokumen',
-        'file_path',
+        'path_file',
         'ukuran_file',
         'tipe_file',
         'keterangan',
+        // add other correct columns if needed
     ];
 
     /**
