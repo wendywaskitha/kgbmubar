@@ -30,6 +30,7 @@ class PengajuanKgb extends Model
         'tanggal_sk',
         'tmt_kgb_baru',
         'status',
+        'catatan',
         'catatan_verifikasi_dinas',
         'catatan_verifikasi_kabupaten',
         'jumlah_revisi',
