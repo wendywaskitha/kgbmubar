@@ -25,14 +25,17 @@ class DokumenPengajuan extends Model
     protected $fillable = [
         'tenant_id',
         'pengajuan_kgb_id',
-        // corrected to match DB:
         'nama_file',
         'jenis_dokumen',
         'path_file',
-        'ukuran_file',
         'tipe_file',
-        // 'keterangan',
-        // add other correct columns if needed
+        'status_verifikasi',
+        'catatan_verifikasi',
+        'versi',
+        'verifikator_id',
+        'tanggal_upload',
+        'tanggal_verifikasi',
+        'is_active',
     ];
 
     /**
@@ -41,7 +44,9 @@ class DokumenPengajuan extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'ukuran_file' => 'integer',
+        'tanggal_upload' => 'datetime',
+        'tanggal_verifikasi' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -58,5 +63,13 @@ class DokumenPengajuan extends Model
     public function pengajuanKgb()
     {
         return $this->belongsTo(PengajuanKgb::class);
+    }
+
+    /**
+     * Get the user who verified the dokumen.
+     */
+    public function verifikator()
+    {
+        return $this->belongsTo(User::class, 'verifikator_id');
     }
 }
