@@ -118,7 +118,7 @@ class SkKgbResource extends Resource
                         return 'File: ' . basename($record->file_path);
                     })
                     ->url(function ($record) {
-                        return Storage::url($record->file_path);
+                        return route('sk-kgb.preview', ['skKgb' => $record]);
                     }, true) // Opens in new tab
                     ->searchable(),
                 

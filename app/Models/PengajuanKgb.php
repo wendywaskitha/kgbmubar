@@ -6,10 +6,12 @@ use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\PengajuanKgbObserver;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class PengajuanKgb extends Model
 {
-    use HasFactory, TenantAware;
+    use HasFactory, TenantAware, LogsActivity;
 
     /**
      * The table associated with the model.
@@ -106,5 +108,20 @@ class PengajuanKgb extends Model
     public function dokumenPengajuans()
     {
         return $this->hasMany(DokumenPengajuan::class);
+    }
+
+    /**
+     * Define which events should be recorded for activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['pegawai_id', 'user_pengaju_id', 'no_sk', 'tanggal_sk', 'tmt_kgb_baru',
+                      'status', 'catatan', 'catatan_verifikasi_dinas', 'catatan_verifikasi_kabupaten',
+                      'jumlah_revisi', 'tanggal_pengajuan', 'tanggal_verifikasi_dinas',
+                      'tanggal_verifikasi_kabupaten', 'tanggal_approve', 'tanggal_selesai',
+                      'jenis_pengajuan', 'file_sk_path'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

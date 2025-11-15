@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class SkKgb extends Model
 {
-    use HasFactory, TenantAware;
+    use HasFactory, TenantAware, LogsActivity;
 
     /**
      * The table associated with the model.
@@ -65,5 +67,17 @@ class SkKgb extends Model
     public function pengajuanKgb()
     {
         return $this->belongsTo(PengajuanKgb::class);
+    }
+
+    /**
+     * Define which events should be recorded for activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['pegawai_id', 'pengajuan_kgb_id', 'no_sk', 'tanggal_sk', 'file_path',
+                      'tanggal_efektif', 'status'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

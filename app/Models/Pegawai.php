@@ -6,10 +6,12 @@ use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Pegawai extends Model
 {
-    use HasFactory, SoftDeletes, TenantAware;
+    use HasFactory, SoftDeletes, TenantAware, LogsActivity;
 
     /**
      * The table associated with the model.
@@ -70,5 +72,19 @@ class Pegawai extends Model
     public function pengajuanKgbs()
     {
         return $this->hasMany(PengajuanKgb::class);
+    }
+
+    /**
+     * Define which events should be recorded for activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nip', 'name', 'nrk', 'pangkat_golongan', 'jabatan', 'unit_kerja',
+                      'tmt_pangkat_terakhir', 'tmt_kgb_terakhir', 'tmt_kgb_berikutnya',
+                      'jenis_kelamin', 'tanggal_lahir', 'tempat_lahir', 'status_kepegawaian',
+                      'email', 'phone', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

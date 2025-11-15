@@ -9,6 +9,7 @@ use App\Notifications\VerifikasiSelesai;
 use App\Notifications\PengajuanDitolak;
 use App\Notifications\PengajuanDisetujui;
 use App\Notifications\SKTersedia;
+use App\Services\SkGeneratorService;
 
 class PengajuanKgbObserver
 {
@@ -97,6 +98,8 @@ class PengajuanKgbObserver
                 break;
 
             case 'selesai':
+                // Generate SK document when pengajuan is completed
+                $this->generateAndSaveSKDocument($pengajuanKgb);
                 $this->sendSKTersediaNotification($pengajuanKgb);
                 break;
         }
@@ -216,6 +219,28 @@ class PengajuanKgbObserver
 
         if ($pengajuUser && $pengajuUser->id !== ($pegawaiUser?->id)) {
             $pengajuUser->notify(new PengajuanDitolak($pengajuanKgb));
+        }
+    }
+
+    /**
+     * Generate and save SK document
+     */
+    private function generateAndSaveSKDocument(PengajuanKgb $pengajuanKgb): void
+    {
+        try {
+            $skGenerator = app(SkGeneratorService::class);
+
+            // Generate SK document
+            $filePath = $skGenerator->generateSkDocument($pengajuanKgb);
+
+            // Create SK record in database
+            $skGenerator->createSkRecord($pengajuanKgb, $filePath);
+        } catch (\Exception $e) {
+            // Log the error, but don't break the notification flow
+            \Log::error('Failed to generate SK document: ' . $e->getMessage(), [
+                'pengajuan_kgb_id' => $pengajuanKgb->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

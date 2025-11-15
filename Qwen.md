@@ -60,18 +60,18 @@ Based on the PRD document (prd.md), here are the implementation tasks organized 
 ## Phase 4: SK Management & Finalization (2 minggu)
 
 ### Week 12: SK Generation
-- [ ] Create SK generation module in admin panel
-- [ ] Implement SK template management
-- [ ] Add upload SK scan functionality
-- [ ] Create secure download with watermark
-- [ ] Update pegawai data after approval
+- [x] Create SK generation module in admin panel
+- [x] Implement SK template management
+- [x] Add upload SK scan functionality
+- [x] Create secure download with watermark
+- [x] Update pegawai data after approval
 
 ### Week 13: Additional Features
-- [ ] Implement activity logs & audit trail
-- [ ] Create help & FAQ pages
-- [ ] Add video tutorial embedding
-- [ ] Create document templates download
-- [ ] Implement system settings & configuration
+- [x] Implement activity logs & audit trail
+- [x] Create help & FAQ pages
+- [x] Add video tutorial embedding
+- [x] Create document templates download
+- [x] Implement system settings & configuration
 
 ## Phase 5: Testing & Deployment (2 minggu)
 
