@@ -122,6 +122,15 @@ class PengajuanKgbResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('verifikasi')
+                    ->label('Verifikasi Dokumen')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->color('warning')
+                    ->url(fn($record) => static::getUrl('verifikasi', ['record' => $record]))
+                    ->visible(fn($record) =>
+                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas'])
+                        && in_array($record->status, ['diajukan', 'verifikasi_dinas', 'disetujui', 'ditolak'])
+                    ),
                 Tables\Actions\Action::make('verifikasiDinas')
                     ->label('Ajukan ke Kabupaten')
                     ->icon('heroicon-o-check')
