@@ -7,6 +7,7 @@ use App\Models\PengajuanKgb;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class DokumenList extends Component
@@ -40,39 +41,68 @@ class DokumenList extends Component
             return;
         }
 
-        // Cek apakah file ada di storage
-        $fileExists = false;
         $fileUrl = null;
+        $pathToCheck = $dokumen->path_file;
         
-        // Coba berbagai kemungkinan path
-        if (Storage::disk('public')->exists($dokumen->path_file)) {
-            $fileExists = true;
-            $fileUrl = Storage::disk('public')->url($dokumen->path_file);
-        } elseif (Storage::exists($dokumen->path_file)) {
-            $fileExists = true;
-            $fileUrl = Storage::url($dokumen->path_file);
-        } elseif (file_exists(public_path($dokumen->path_file))) {
-            $fileExists = true;
-            $fileUrl = asset($dokumen->path_file);
+        // Log untuk debugging
+        Log::info('Checking file path: ' . $pathToCheck);
+        
+        // Method 1: Check public disk dengan path langsung
+        if (Storage::disk('public')->exists($pathToCheck)) {
+            $fileUrl = Storage::disk('public')->url($pathToCheck);
+            Log::info('File found in public disk: ' . $fileUrl);
+        }
+        // Method 2: Coba tanpa 'public/' prefix jika ada
+        elseif (str_starts_with($pathToCheck, 'public/')) {
+            $pathWithoutPublic = str_replace('public/', '', $pathToCheck);
+            if (Storage::disk('public')->exists($pathWithoutPublic)) {
+                $fileUrl = Storage::disk('public')->url($pathWithoutPublic);
+                Log::info('File found without public prefix: ' . $fileUrl);
+            }
+        }
+        // Method 3: Check default storage
+        elseif (Storage::exists($pathToCheck)) {
+            $fileUrl = Storage::url($pathToCheck);
+            Log::info('File found in default storage: ' . $fileUrl);
+        }
+        // Method 4: Check langsung di public path
+        elseif (file_exists(public_path($pathToCheck))) {
+            $fileUrl = asset($pathToCheck);
+            Log::info('File found in public path: ' . $fileUrl);
+        }
+        // Method 5: Check storage/app/public path
+        elseif (file_exists(storage_path('app/public/' . $pathToCheck))) {
+            $fileUrl = asset('storage/' . $pathToCheck);
+            Log::info('File found in storage/app/public: ' . $fileUrl);
         }
         
-        if ($fileExists && $fileUrl) {
+        if ($fileUrl) {
             $this->selectedDokumen = $dokumen;
             
             // Deteksi tipe file
             $extension = strtolower(pathinfo($dokumen->path_file, PATHINFO_EXTENSION));
-            $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+            $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']);
             
             $this->dispatch('open-document-modal', [
+                'url' => $fileUrl,
+                'isImage' => $isImage,
+                'fileName' => $dokumen->nama_file,
+                'fileType' => $extension
+            ]);
+            
+            Log::info('Dispatched modal event', [
                 'url' => $fileUrl,
                 'isImage' => $isImage,
                 'fileName' => $dokumen->nama_file
             ]);
         } else {
+            Log::error('File not found in any location: ' . $pathToCheck);
+            
             Notification::make()
                 ->title('File tidak ditemukan')
-                ->body('Path: ' . $dokumen->path_file)
+                ->body('Path: ' . $pathToCheck . ' - Pastikan file sudah diupload dan storage link sudah dibuat (php artisan storage:link)')
                 ->danger()
+                ->duration(10000)
                 ->send();
         }
     }
