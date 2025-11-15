@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource\Pages;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource\RelationManagers;
+use App\Models\User;
+use Filament\Notifications\Notification;
 
 class PengajuanKgbResource extends Resource
 {
@@ -28,17 +30,6 @@ class PengajuanKgbResource extends Resource
     {
         return $form
             ->schema([
-                // Forms\Components\Select::make('pegawai_id')
-                //     ->label('Pegawai')
-                //     ->relationship('pegawai', 'name')
-                //     ->default(function () {
-                //         $user = auth()->user();
-                //         $pegawai = $user->pegawai;
-                //         return $pegawai ? $pegawai->id : null;
-                //     })
-                //     ->disabled() // Pegawai can only select themselves
-                //     ->required(),
-
                 Forms\Components\DatePicker::make('tmt_kgb_baru')
                     ->label('TMT KGB Baru')
                     ->required(),
@@ -121,22 +112,52 @@ class PengajuanKgbResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\Action::make('ajukan')
+                    ->label('Ajukan')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->status === 'draft')
+                    ->requiresConfirmation()
+                    ->modalHeading('Ajukan Pengajuan KGB')
+                    ->modalDescription('Pastikan semua data dan dokumen sudah benar. Anda yakin ingin mengajukan KGB ini ke admin dinas? Setelah diajukan, data tidak dapat diedit.')
+                    ->modalSubmitActionLabel('Ajukan Sekarang')
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => 'diajukan',
+                            'tanggal_pengajuan' => now(),
+                        ]);
+
+                        $targetRoles = ['admin_dinas', 'verifikator_dinas', 'operator_dinas'];
+                        $user = Auth::user();
+                        $pegawai = $user->pegawai;
+                        $appRecipients = User::whereIn('role', $targetRoles)
+                            ->where('tenant_id', $user->tenant_id)
+                            ->get();
+
+                        foreach ($appRecipients as $recipient) {
+                            Notification::make()
+                                ->title('Pengajuan KGB Baru')
+                                ->body('Pengajuan KGB baru diajukan oleh ' . $pegawai->name . ' pada ' . now()->format('d M Y H:i'))
+                                ->icon('heroicon-o-document-text')
+                                ->success()
+                                ->sendToDatabase($recipient);
+                        }
+
+                        Notification::make()
+                            ->success()
+                            ->title('Pengajuan Telah Diajukan')
+                            ->body('Pengajuan KGB Anda telah dikirim ke admin dinas.')
+                            ->send();
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
-                // Only show pengajuan for the current user's pegawai record
                 $user = Auth::user();
                 $pegawai = $user->pegawai;
-
                 if ($pegawai) {
                     $query->where('pegawai_id', $pegawai->id);
                 } else {
-                    $query->whereRaw('1 = 0'); // Return empty result if no pegawai found
+                    $query->whereRaw('1 = 0');
                 }
             });
     }
