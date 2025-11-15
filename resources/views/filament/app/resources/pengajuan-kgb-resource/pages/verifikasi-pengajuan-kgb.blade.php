@@ -49,24 +49,19 @@
             </div>
         </x-filament::section>
 
-        {{-- Dokumen Verifikasi --}}
-        <div class="flex flex-col gap-6">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Daftar Dokumen Persyaratan</h3>
+        {{-- Dokumen Verifikasi - Using Filament v3 Relation Manager --}}
+        <x-filament::section>
+            <x-slot name="heading">
+                Daftar Dokumen Persyaratan
+            </x-slot>
+            <div class="mt-4">
+                @foreach($this->getRelationManagers() as $relationManager)
+                    @livewire($relationManager, [
+                        'ownerRecord' => $this->getRecord(),
+                        'pageClass' => static::class,
+                    ], key($relationManager))
+                @endforeach
             </div>
-
-            {{ \Filament\Support\Facades\FilamentView::renderHook(
-                'panels::resource.pages.list-records.table.before',
-                scopes: [static::getResource()::getTableModelClass()]
-            ) }}
-
-            <div class="px-4 py-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                @livewire(\Filament\Tables\Http\Livewire\RelationManager::class, [
-                    'ownerRecord' => $this->record,
-                    'relationManager' => \App\Filament\App\Resources\PengajuanKgbResource\RelationManagers\DokumenPengajuanRelationManager::class,
-                    'pageClass' => static::class,
-                ], key('dokumen-relation-manager'))
-            </div>
-        </div>
+        </x-filament::section>
     </div>
 </x-filament-panels::page>
