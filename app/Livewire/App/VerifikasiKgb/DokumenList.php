@@ -44,36 +44,44 @@ class DokumenList extends Component
         $fileUrl = null;
         $pathToCheck = $dokumen->path_file;
         
-        // Log untuk debugging
         Log::info('Checking file path: ' . $pathToCheck);
         
-        // Method 1: Check public disk dengan path langsung
-        if (Storage::disk('public')->exists($pathToCheck)) {
+        // Method 1: Path dengan dokumen-pengajuan
+        if (Storage::disk('public')->exists('dokumen-pengajuan/' . $pathToCheck)) {
+            $fileUrl = asset('storage/dokumen-pengajuan/' . $pathToCheck);
+            Log::info('File found with dokumen-pengajuan prefix: ' . $fileUrl);
+        }
+        // Method 2: Path sudah include dokumen-pengajuan
+        elseif (str_contains($pathToCheck, 'dokumen-pengajuan')) {
+            $cleanPath = str_replace('dokumen-pengajuan/', '', $pathToCheck);
+            if (Storage::disk('public')->exists('dokumen-pengajuan/' . $cleanPath)) {
+                $fileUrl = asset('storage/dokumen-pengajuan/' . $cleanPath);
+                Log::info('File found after cleaning path: ' . $fileUrl);
+            }
+        }
+        // Method 3: Direct path check
+        elseif (Storage::disk('public')->exists($pathToCheck)) {
             $fileUrl = Storage::disk('public')->url($pathToCheck);
             Log::info('File found in public disk: ' . $fileUrl);
         }
-        // Method 2: Coba tanpa 'public/' prefix jika ada
-        elseif (str_starts_with($pathToCheck, 'public/')) {
-            $pathWithoutPublic = str_replace('public/', '', $pathToCheck);
-            if (Storage::disk('public')->exists($pathWithoutPublic)) {
-                $fileUrl = Storage::disk('public')->url($pathWithoutPublic);
-                Log::info('File found without public prefix: ' . $fileUrl);
+        // Method 4: Check dengan berbagai prefix
+        else {
+            $prefixes = ['dokumen-pengajuan/', 'storage/dokumen-pengajuan/', ''];
+            foreach ($prefixes as $prefix) {
+                $testPath = $prefix . ltrim($pathToCheck, '/');
+                
+                if (Storage::disk('public')->exists($testPath)) {
+                    $fileUrl = asset('storage/' . $testPath);
+                    Log::info('File found with prefix: ' . $prefix . ' -> ' . $fileUrl);
+                    break;
+                }
+                
+                if (file_exists(public_path('storage/' . $testPath))) {
+                    $fileUrl = asset('storage/' . $testPath);
+                    Log::info('File found in filesystem: ' . $fileUrl);
+                    break;
+                }
             }
-        }
-        // Method 3: Check default storage
-        elseif (Storage::exists($pathToCheck)) {
-            $fileUrl = Storage::url($pathToCheck);
-            Log::info('File found in default storage: ' . $fileUrl);
-        }
-        // Method 4: Check langsung di public path
-        elseif (file_exists(public_path($pathToCheck))) {
-            $fileUrl = asset($pathToCheck);
-            Log::info('File found in public path: ' . $fileUrl);
-        }
-        // Method 5: Check storage/app/public path
-        elseif (file_exists(storage_path('app/public/' . $pathToCheck))) {
-            $fileUrl = asset('storage/' . $pathToCheck);
-            Log::info('File found in storage/app/public: ' . $fileUrl);
         }
         
         if ($fileUrl) {
@@ -97,10 +105,15 @@ class DokumenList extends Component
             ]);
         } else {
             Log::error('File not found in any location: ' . $pathToCheck);
+            Log::error('Checked paths: ', [
+                'public_disk' => Storage::disk('public')->path($pathToCheck),
+                'dokumen-pengajuan' => Storage::disk('public')->path('dokumen-pengajuan/' . $pathToCheck),
+                'public_path' => public_path('storage/' . $pathToCheck)
+            ]);
             
             Notification::make()
                 ->title('File tidak ditemukan')
-                ->body('Path: ' . $pathToCheck . ' - Pastikan file sudah diupload dan storage link sudah dibuat (php artisan storage:link)')
+                ->body('Path: ' . $pathToCheck . ' | Lokasi: public/storage/dokumen-pengajuan/')
                 ->danger()
                 ->duration(10000)
                 ->send();
