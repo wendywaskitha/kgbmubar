@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource;
 use Filament\Notifications\Notification;
-use App\Models\User;
 
 class CreatePengajuanKgb extends CreateRecord
 {
@@ -30,8 +29,10 @@ class CreatePengajuanKgb extends CreateRecord
         $data['pegawai_id'] = $pegawai->id;
         // Set jenis_pengajuan = mandiri by default untuk pegawai
         $data['jenis_pengajuan'] = 'mandiri';
+        // Set default status = draft (pegawai simpan draft dulu, baru ajukan nanti)
+        $data['status'] = 'draft';
 
-        // Set tanggal_pengajuan jika status diajukan
+        // Set tanggal_pengajuan HANYA jika status diajukan (biasanya tidak terjadi saat create, tapi dari action Ajukan)
         if (isset($data['status']) && $data['status'] === 'diajukan') {
             $data['tanggal_pengajuan'] = now();
         }
@@ -43,7 +44,7 @@ class CreatePengajuanKgb extends CreateRecord
         return Notification::make()
             ->success()
             ->title('Pengajuan KGB Berhasil Dibuat')
-            ->body('Pengajuan KGB Anda telah berhasil disimpan.');
+            ->body('Pengajuan KGB Anda telah berhasil disimpan sebagai draft. Lengkapi dokumen, lalu klik "Ajukan" untuk mengirim ke admin dinas.');
     }
 
     protected function getRedirectUrl(): string
@@ -51,26 +52,5 @@ class CreatePengajuanKgb extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    protected function afterCreate(): void
-    {
-        $record = $this->record;
-        $user = Auth::user();
-        $pegawai = $user->pegawai;
-
-        // Kirim notification ke admin_dinas, verifikator_dinas, operator_dinas di tenant yang sama
-        $targetRoles = ['admin_dinas', 'verifikator_dinas', 'operator_dinas'];
-        $appRecipients = User::whereIn('role', $targetRoles)
-            ->where('tenant_id', $user->tenant_id)
-            ->get();
-
-        foreach ($appRecipients as $recipient) {
-            Notification::make()
-                ->title('Pengajuan KGB Baru')
-                ->body('Pengajuan KGB baru diajukan oleh ' . $pegawai->name . ' pada ' . now()->format('d M Y H:i'))
-                ->icon('heroicon-o-document-text')
-                ->success()
-                ->actions([])
-                ->sendToDatabase($recipient);
-        }
-    }
+    // HAPUS method afterCreate() agar notifikasi HANYA dikirim saat action "Ajukan" diklik, BUKAN saat save/create
 }
