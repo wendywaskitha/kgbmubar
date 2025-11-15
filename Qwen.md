@@ -5,41 +5,41 @@ Based on the PRD document (prd.md), here are the implementation tasks organized 
 ## Phase 1: Core System (4 minggu)
 
 ### Week 1-2: Initial Setup
-- [ ] Setup Laravel 12 + FilamentPHP 3.3
-- [ ] Configure multi-panel FilamentPHP (`/admin`, `/app`, `/pegawai`)
-- [ ] Create database schema & migrations
-- [ ] Setup seeders for roles, permissions, sample data
-- [ ] Configure authentication & authorization (separate guards per panel)
-- [ ] Test basic panel access for each role type
+- [x] Setup Laravel 12 + FilamentPHP 3.3
+- [x] Configure multi-panel FilamentPHP (`/admin`, `/app`, `/pegawai`)
+- [x] Create database schema & migrations
+- [x] Setup seeders for roles, permissions, sample data
+- [x] Configure authentication & authorization (separate guards per panel)
+- [x] Test basic panel access for each role type
 
 ### Week 3-4: Core CRUD & Dashboards
-- [ ] Implement CRUD for Tenant (dinas) in `/admin` panel
-- [ ] Implement CRUD for Pegawai in `/app` panel
-- [ ] Create basic dashboard for `/admin` panel with metrics
-- [ ] Create basic dashboard for `/app` panel with metrics
-- [ ] Create basic dashboard for `/pegawai` panel with metrics
-- [ ] Implement user management per panel (roles, permissions)
-- [ ] Implement tenant context middleware
-- [ ] Test tenant isolation functionality
+- [x] Implement CRUD for Tenant (dinas) in `/admin` panel
+- [x] Implement CRUD for Pegawai in `/app` panel
+- [x] Create basic dashboard for `/admin` panel with metrics
+- [x] Create basic dashboard for `/app` panel with metrics
+- [x] Create basic dashboard for `/pegawai` panel with metrics
+- [x] Implement user management per panel (roles, permissions)
+- [x] Implement tenant context middleware
+- [x] Test tenant isolation functionality
 
 ## Phase 2: Pengajuan & Workflow (4 minggu)
 
 ### Week 5-6: Pengajuan Forms
-- [ ] Create pengajuan form in `/app` panel (admin input)
-- [ ] Create pengajuan form in `/pegawai` panel (self-service)
-- [ ] Implement file upload & validation for required documents
-- [ ] Add document preview feature
-- [ ] Implement draft & submit functionality
-- [ ] Create Pengajuan model with proper relationships
+- [x] Create pengajuan form in `/app` panel (admin input)
+- [x] Create pengajuan form in `/pegawai` panel (self-service)
+- [x] Implement file upload & validation for required documents
+- [x] Add document preview feature
+- [x] Implement draft & submit functionality
+- [x] Create Pengajuan model with proper relationships
 
 ### Week 7-8: Verification & Approval Workflow
-- [ ] Implement verifikasi flow for dinas panel
-- [ ] Implement verifikasi flow for kabupaten panel
-- [ ] Create revisi flow with version control
-- [ ] Implement approval/rejection logic
-- [ ] Create status transitions & validation rules
-- [ ] Implement eligible calculation logic for KGB
-- [ ] Test complete workflow from pengajuan to approval/rejection
+- [x] Implement verifikasi flow for dinas panel
+- [x] Implement verifikasi flow for kabupaten panel
+- [x] Create revisi flow with version control
+- [x] Implement approval/rejection logic
+- [x] Create status transitions & validation rules
+- [x] Implement eligible calculation logic for KGB
+- [x] Test complete workflow from pengajuan to approval/rejection
 
 ## Phase 3: Notifications & Reporting (3 minggu)
 
