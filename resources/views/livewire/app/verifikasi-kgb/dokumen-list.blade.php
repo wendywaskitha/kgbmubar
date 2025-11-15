@@ -129,7 +129,7 @@
         x-data="{ open: false, documentUrl: '' }"
         @open-document-modal.window="open = true; documentUrl = $event.detail.url"
         x-show="open"
-        x-cloak
+        style="display: none;"
         class="fixed inset-0 z-50 overflow-y-auto"
         aria-labelledby="modal-title"
         role="dialog"
@@ -181,9 +181,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    [x-cloak] {
-        display: none !important;
-    }
-</style>
