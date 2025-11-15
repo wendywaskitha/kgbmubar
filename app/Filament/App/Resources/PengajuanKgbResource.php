@@ -144,7 +144,55 @@ class PengajuanKgbResource extends Resource
                         }
                     })
                     ->modalWidth('7xl'),
-                ... // keep other actions, not shown here for brevity
+                Tables\Actions\Action::make('verifikasi')
+                    ->label('Verifikasi Dokumen')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->color('success')
+                    ->visible(fn($record) =>
+                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
+                        && $record->status === 'diajukan'
+                    )
+                    ->url(fn($record) => static::getUrl('verifikasi', ['record' => $record->id]))
+                    ->openUrlInNewTab(false),
+                Tables\Actions\Action::make('verifikasiDinas')
+                    ->label('Ajukan ke Kabupaten')
+                    ->icon('heroicon-o-check')
+                    ->color('primary')
+                    ->visible(fn($record) =>
+                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
+                        && $record->status === 'diajukan'
+                    )
+                    ->form([
+                        Forms\Components\Checkbox::make('verifikasi_complete')
+                            ->label('Saya telah memverifikasi dan dokumen sudah lengkap & benar')
+                            ->required(),
+                        Forms\Components\Textarea::make('catatan_verifikasi_dinas')
+                            ->label('Catatan Verifikasi (Opsional)')
+                            ->maxLength(512),
+                    ])
+                    ->action(function ($record, $data) {
+                        if ($data['verifikasi_complete']) {
+                            $record->update([
+                                'status' => 'verifikasi_dinas',
+                                'catatan_verifikasi_dinas' => $data['catatan_verifikasi_dinas'] ?? null,
+                                'tanggal_verifikasi_dinas' => now(),
+                            ]);
+                            $adminKabupaten = User::whereIn('role', ['super_admin', 'verifikator_kabupaten'])
+                                ->where('tenant_id', 1)
+                                ->get();
+                            foreach ($adminKabupaten as $recipient) {
+                                Notification::make()
+                                    ->title('Pengajuan KGB Siap Diverifikasi Kabupaten')
+                                    ->body('Pengajuan KGB milik pegawai ' . $record->pegawai?->name . ' telah siap diverifikasi oleh admin kabupaten.')
+                                    ->icon('heroicon-o-document-text')
+                                    ->success()
+                                    ->sendToDatabase($recipient);
+                            }
+                        }
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Verifikasi Dinas')
+                    ->modalDescription('Pastikan semua dokumen sudah lengkap sebelum diajukan ke admin panel kabupaten.'),
             ])
             ->defaultSort('created_at', 'desc');
     }
