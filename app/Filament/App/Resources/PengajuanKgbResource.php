@@ -29,13 +29,14 @@ class PengajuanKgbResource extends Resource
             ->schema([
                 Forms\Components\Select::make('pegawai_id')
                     ->label('Pegawai')
-                    ->relationship('pegawai', 'name')
-                    ->options(function () {
-                        $user = auth()->user();
-                        return Pegawai::where('tenant_id', $user->tenant_id)->pluck('name', 'id');
-                    })
+                    ->relationship(
+                        name: 'pegawai',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn (Builder $query) => $query->where('tenant_id', auth()->user()->tenant_id)
+                    )
                     ->required()
-                    ->searchable(),
+                    ->searchable()
+                    ->preload(),
                 
                 Forms\Components\DatePicker::make('tmt_kgb_baru')
                     ->label('TMT KGB Baru')
@@ -51,10 +52,12 @@ class PengajuanKgbResource extends Resource
                     ->required(),
                 
                 Forms\Components\Textarea::make('catatan_verifikasi_dinas')
-                    ->label('Catatan Verifikasi Dinas'),
+                    ->label('Catatan Verifikasi Dinas')
+                    ->columnSpanFull(),
                 
                 Forms\Components\Textarea::make('catatan_verifikasi_kabupaten')
-                    ->label('Catatan Verifikasi Kabupaten'),
+                    ->label('Catatan Verifikasi Kabupaten')
+                    ->columnSpanFull(),
             ]);
     }
 
