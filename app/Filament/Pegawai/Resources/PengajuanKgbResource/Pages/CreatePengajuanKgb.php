@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Pegawai\Resources\PengajuanKgbResource;
 use Filament\Notifications\Notification;
+use App\Models\User;
 
 class CreatePengajuanKgb extends CreateRecord
 {
@@ -48,5 +49,28 @@ class CreatePengajuanKgb extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function afterCreate(): void
+    {
+        $record = $this->record;
+        $user = auth()->user();
+        $pegawai = $user->pegawai;
+
+        // Kirim notification ke admin_dinas, verifikator_dinas, operator_dinas di tenant yang sama
+        $targetRoles = ['admin_dinas', 'verifikator_dinas', 'operator_dinas'];
+        $appRecipients = User::whereIn('role', $targetRoles)
+            ->where('tenant_id', $user->tenant_id)
+            ->get();
+
+        foreach ($appRecipients as $recipient) {
+            Notification::make()
+                ->title('Pengajuan KGB Baru')
+                ->body('Pengajuan KGB baru diajukan oleh ' . $pegawai->name . ' pada ' . now()->format('d M Y H:i'))
+                ->icon('heroicon-o-document-text')
+                ->success()
+                ->actions([])
+                ->sendToDatabase($recipient);
+        }
     }
 }
