@@ -186,9 +186,9 @@ class PengajuanKgbResource extends Resource
         return [
             'index' => Pages\ListPengajuanKgbs::route('/'),
             'create' => Pages\CreatePengajuanKgb::route('/create'),
+            'verifikasi' => Pages\VerifikasiPengajuanKgb::route('/{record}/verifikasi'),
             'edit' => Pages\EditPengajuanKgb::route('/{record}/edit'),
             'view' => Pages\ViewPengajuanKgb::route('/{record}'),
-            'verifikasi' => Pages\VerifikasiPengajuanKgb::route('/{record}/verifikasi'),
         ];
     }
 }
