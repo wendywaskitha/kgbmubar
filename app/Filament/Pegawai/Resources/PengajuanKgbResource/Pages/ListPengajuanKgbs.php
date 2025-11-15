@@ -2,12 +2,13 @@
 
 namespace App\Filament\Pegawai\Resources\PengajuanKgbResource\Pages;
 
-use App\Filament\Pegawai\Resources\PengajuanKgbResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Tables;
 use App\Models\User;
+use Filament\Tables;
+use Filament\Actions;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ListRecords;
+use App\Filament\Pegawai\Resources\PengajuanKgbResource;
 
 class ListPengajuanKgbs extends ListRecords
 {
@@ -42,7 +43,7 @@ class ListPengajuanKgbs extends ListRecords
 
                     // Send notification to admin_dinas, verifikator_dinas, operator_dinas in tenant
                     $targetRoles = ['admin_dinas', 'verifikator_dinas', 'operator_dinas'];
-                    $user = auth()->user();
+                    $user = Auth::user();
                     $pegawai = $user->pegawai;
                     $appRecipients = User::whereIn('role', $targetRoles)
                         ->where('tenant_id', $user->tenant_id)
