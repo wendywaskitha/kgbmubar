@@ -122,38 +122,6 @@ class PengajuanKgbResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('preview_file')
-                    ->label('Preview')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->modalHeading('Preview Dokumen')
-                    ->modalContent(function ($record) {
-                        $fileUrl = asset('storage/' . ltrim($record->path_file, '/'));
-                        $extension = strtolower(pathinfo($record->path_file, PATHINFO_EXTENSION));
-                        $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']);
-                        if ($isImage) {
-                            return view('filament.app.resources.pengajuan-kgb-resource.partials.preview-image', [
-                                'fileUrl' => $fileUrl,
-                                'fileName' => $record->nama_file,
-                            ]);
-                        } else {
-                            return view('filament.app.resources.pengajuan-kgb-resource.partials.preview-pdf', [
-                                'fileUrl' => $fileUrl,
-                                'fileName' => $record->nama_file,
-                            ]);
-                        }
-                    })
-                    ->modalWidth('7xl'),
-                Tables\Actions\Action::make('verifikasi')
-                    ->label('Verifikasi Dokumen')
-                    ->icon('heroicon-o-clipboard-document-check')
-                    ->color('success')
-                    ->visible(fn($record) =>
-                        in_array(Auth::user()->role, ['admin_dinas', 'verifikator_dinas', 'operator_dinas'])
-                        && $record->status === 'diajukan'
-                    )
-                    ->url(fn($record) => static::getUrl('verifikasi', ['record' => $record->id]))
-                    ->openUrlInNewTab(false),
                 Tables\Actions\Action::make('verifikasiDinas')
                     ->label('Ajukan ke Kabupaten')
                     ->icon('heroicon-o-check')
